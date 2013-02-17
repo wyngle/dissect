@@ -1,0 +1,213 @@
+<html>
+  <body>
+
+<!-- /////////////////////////drop down with partners/////////////////////////////// -->
+
+      <%files = Dir.glob(File.expand_path("../dissect/lib/config**/*"))%>
+
+      <form action="/" method="post" name="aform" id="aform">
+        <fieldset>
+        <legend>Choose a RegExp Set</legend>
+        <div class="form-horizontal">
+          <select name="dissector">
+                <option value="generic.yml" selected="selected">Select a set...</option>
+                <% files.each do |ymlfile| %>
+                <option value=<%=ymlfile%>><%=File.basename(ymlfile, '.*')%></option>
+                <% end %>
+          </select>
+          <input class="btn" Type="submit" value="Show the regexes" />
+          </div>
+        </fieldset>
+      </form>
+
+      <!-- load to the tester -->
+      <script>
+        function onSubmitClick(box) {
+          var box = document.getElementById(box);
+          var box2 = document.getElementById('regex');
+          box2.value = box.value;
+        }
+      </script>
+
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th><%= @id %></th>
+            <th><%= @name %></th>
+            <th><%= @reg %></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% unless @regkeys.nil? %>
+            <% @regkeys.each_with_index do |elem, i| %>
+              <%instance_variable_get("@" + elem)%>
+              <tr>
+                <td><%= i %></td>
+                <td><%= elem %></td>
+                <td id="reg"><%= instance_variable_get("@" + elem) %></td>
+                <td><button id="saveit">save</button></td>
+                <td><button class="btn btn-info pull-right" onclick='onSubmitClick(reg); return false'>Load me To the Tester</button></td>
+              </tr>
+            <% end %>
+          <% end %>
+        </tbody>
+      </table>
+
+
+  <!-- //////////////////regex tester//////////////////////////////////////////////////// -->
+      <legend>Regex Tester</legend>
+      <div class="row">
+        <div class="span7">
+            <p>Enter your Regular Expression:</p>
+            <input name="regex" id="regex" type="text" class="input-block-level"/></br></br>
+            <form class="form-inline" action="/_dissect/email" method="post" id="viz_form">
+              <input placeholder="Enter email to load" name="mail" type="text" class="input-medium">
+              <input class="btn" type="submit" value="Load!!">
+            </form>
+            <textarea placeholder="Enter your text to match or choose an E-mail" name="subject" id="subject" class="input-block-level" rows="4"><%= @str_mail %></textarea>
+        </div>
+
+
+        <div class="span4 offset1">
+          <h4>Matches:</h4>
+          <span id="regs"></span>
+        </div>
+      </div>
+
+<!-- /////////////////////////////////JS//////////////////////////////////////////// -->
+
+    <!-- load email to the regex tester -->
+    <script>
+      $(function (){
+        $('#viz_form').submit(function(ev){
+          //prevent the default behavior of a form (it should do nothing in our case)
+          ev.preventDefault();
+          $.ajax({
+            url: "/_dissect/email",
+            data: $(this).serialize(),
+            //could be json too
+            dataType: "html",
+            success: function(data) {
+              $('#subject').html(data);
+            }
+          });
+        });
+      });
+    </script>
+
+    <!-- post newyml textarea params -->
+    <script>
+      $(function (){
+        $('#yml').submit(function(ev){
+          ev.preventDefault();
+          var yml = (document.getElementById("newyml").value);
+
+          $.post("/save", { newyml : yml });
+        });
+      });
+    </script>
+
+    <!-- Regex tester -->
+    <script>
+      function check_regex() {
+        var regexVal = $('#regex').val(),
+          subjectVal = $('#subject').val();
+          $.post("/regex", { regex : regexVal, subject : subjectVal },
+          function(data) {
+            $('#resultt').html(data.resp);
+            // var result =  jQuery.parseJSON(data);
+            // console.log(data.resp);
+          }
+        );
+      }
+
+      $(document).ready(function() {
+        $("#regex,#subject").keyup(function(e){
+          e.preventDefault();
+          check_regex();
+        });
+      });
+    </script>
+
+    <!-- update textarea to save to yml -->
+    <script>
+        $('#yeah').click(function(){
+          var text = '<%=@partner_host%>'+"\r\n";
+          $('textarea:not(:eq(4))').each(function(){
+               text += this.value+"\r\n"
+          })
+          $('textarea:eq(4)').val(text)
+          return false;
+        })
+    </script>
+
+
+    <!-- ajax post on change -->
+    <script>
+    // $(document).ready(function() {
+    //     $("#dissector").change(function() {
+    //         var strSelected = "";
+    //         $("#dissector option:selected").each(function() {
+    //             strSelected += $(this)[0].value;
+    //         });
+    //         // var url = "/Home/MyAction/" + strSelected;
+
+    //         $.post("/", { slec : strSelected},
+    //           function(data) {
+    //             $('#regs').html(data.resp);
+    //         });
+    //     });
+    // });
+
+
+    // $(function (){
+    //         $('#aform').submit(function(ev){
+    //           //prevent the default behavior of a form (it should do nothing in our case)
+    //           ev.preventDefault();
+    //           $.ajax({
+    //             url: "/",
+    //             data: $(this).serialize(),
+    //             //could be json too
+    //             dataType: "html",
+    //             success: function(data) {
+    //               // $('#subject').html(data);
+    //             }
+    //           });
+    //         });
+    //       });
+    </script>
+
+    <!-- edit regexes in the table -->
+    <script>
+
+    $('td[id="reg"]').click(
+        function(){
+            var text = $(this).text();
+            $(this).text('');
+            $('<input class="input-xxlarge" type="text" placeholder="RegExp"/>').appendTo($(this)).val(text).select().blur(
+                function(){
+                    var newText = $(this).val();
+                    $(this).parent().text(newText),find('input:text').remove();
+                });
+        });
+    </script>
+
+    <!-- save the regexes -->
+    <script>
+        $(function (){
+          $('#saveit').submit(function(ev){
+            ev.preventDefault();
+            var save = (document.getElementById('td[id="reg"]').value);
+
+            $.post("/save", { reg : save });
+            function(data) {
+                $('#saveit').html(data.resp);
+            });
+          });
+        });
+    </script>
+
+  </body>
+</html>

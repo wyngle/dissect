@@ -1,0 +1,7 @@
+# encoding: utf-8
+generic:
+  qty: /((?<test>\bqt.*?|\bqty.*?|\bquan.*?)|(\g<test>[:\s.*]))(?<quantity>\d+)/i
+  orderno: /(?<prev>\border.*?)(?<ordernumber>\d{2,20}(-\d+)*)/i
+  price: /(?<mplampla>(\btotal|\bsum|\bprice)\W*[a-z]*\W*)(?<cu>\beu[ro]*\W*|\€|\$|\£)(?<dec>[1-9]\d*|0)(?<cent>\.\d{1,2})?/i
+  vat: /(vat.*)(?<vat>\d+)/
+

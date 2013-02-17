@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <title><%= @title %></title>
+      <link rel="stylesheet" href="/_dissect/stylesheets/bootstrap.min.css">
+      <link rel="stylesheet" href="/_dissect/stylesheets/bootstrap-responsive.min.css">
+      <script src="/_dissect/javascripts/jquery.min.js"></script>
+   </head>
+   <body>
+      <div class="container">
+      <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-target=".nav-collapse" data-toggle="collapse">
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="/_dissect">Dissect Dashboard</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+            <li>
+            <a href="/_dissect/testme">Test Dissect</a>
+            </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+      <%=yield %>
+   </body>
+   <footer  class="footer">
+    <!-- <a href='/'> Back to index </a> -->
+  </footer>
+</html>

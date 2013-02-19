@@ -37,7 +37,7 @@ module Dissect
     end
 
     get '/_dissect' do
-      @title = "Dissect" 
+      @title = "Dissect"
       respond_to do |format|
         format.html do
           erb :list
@@ -66,15 +66,6 @@ module Dissect
       end
     end
 
-
-    get '/dropdown' do
-      @select = params[:selected]
-      respond_to do |format|
-        format.html do
-          erb :dropdown
-        end
-      end
-    end
 
     # save updated yml
     post '/save' do
@@ -126,9 +117,7 @@ module Dissect
       end
     end
 
-
     #test dissect
-
     get '/testme' do
       respond_to do |format|
         format.html do

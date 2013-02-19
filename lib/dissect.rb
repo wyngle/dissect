@@ -26,13 +26,8 @@ module Dissect
       @env ||= defined?(Rails) ? Rails.env : ENV['RACK_ENV'] || 'development'
     end
 
-    def tohash (re)
-      @price_hash = (@str.scan2 re)[0]
-    end
-
-    def thesender(mail)
-      @sender = mail.from
-      @sender = @sender.to_s.gsub(/[\[\]]/, "").tr('"', '').split("@")[1]
+    def empty_hash(values)
+      ""
     end
 
     def to_plaintext(mail)
@@ -49,78 +44,62 @@ module Dissect
         ::Regexp.new(split[1], options)
     end
 
-    def result(order_no, quantity, vat, price, currency)
-      @output = {"Order number" => "", "Quantity" => "", "Price" => "", "Vat" => "" }
-      @output["Order number"] = order_no
-      @output["Quantity"] = quantity
-      @output["Vat"] = vat
-      @output["Price"] = price
-      @output["Currency"] = currency
-      return @output
+    def root
+      File.expand_path '../..', __FILE__
     end
 
-    def process (arg)
+    # maybe better -> identifier as dir and inside a yml file
+    # def create_config_dir(identifier)
+    #   Dir.mkdir(File.join(root, "config/dissect")) unless File.exists?(File.join(root, "config/dissect"))
+    # end
 
-      begin
-        mail = Mail.read(arg)
-      rescue => err
-        puts "Exception: #{err}"
-        Dissect.logger.fatal "Exception: #{err.backtrace}"
-        err
-      end
+    def process(data, identifier, input_type = "email", output_type = "json")
+      puts 'data: ' + data
+      puts 'identifier: '  + identifier.join(",")
+      puts 'input_type: '  + input_type
+      puts 'output_type: ' + output_type
 
-      sender = thesender(mail)
-      str    = to_plaintext(mail)
+      Dir.mkdir(File.join(root, "config/dissect")) unless File.exists?(File.join(root, "config/dissect"))
 
-      if File.exists?(File.expand_path("../config/#{sender}.yml"))
-        regexes = YAML.load_file(File.expand_path("../config/#{sender}.yml"))
-        Dissect.logger.info "Using #{sender}.yml config file."
-        price_reg   = to_regexp regexes["#{sender}"]["price"]
-        @price_hash = (@str.scan2 price_reg)[0]
-      else
-        sender="generic"
-        regexes = YAML.load_file(File.expand_path("../generic.yml"))
-        Dissect.logger.info "Using the generic.yml config file."
-
-        price_cur_front_big = to_regexp regexes["#{sender}"]["price_cur_front_big"]
-        price_cur_end_big   = to_regexp regexes["#{sender}"]["price_cur_end_big"]
-        price_cur_end       = to_regexp regexes["#{sender}"]["price_cur_end"]
-        price_cur_front     = to_regexp regexes["#{sender}"]["price_cur_front"]
-
-        if str =~ price_cur_front_big
-          tohash(price_cur_front_big)
-        elsif str =~ price_cur_end_big
-          tohash(price_cur_end_big)
-        elsif str =~ price_cur_end
-          tohash(price_cur_end)
-        elsif str =~ price_cur_front
-          tohash(price_cur_front)
+      unless data.nil? or data == ""
+        if input_type == "email"
+          str    = to_plaintext(data)
+        elsif input_type == "xml"
+          p "do something for xml parsing"
+        elsif input_type == "text"
+          p "do something for plain text input"
         end
+
+
+        # which config file to use?
+        if File.exists?(File.expand_path("../config/#{identifier}.yml"))
+          regexes = YAML.load_file(File.join(root, "config/dissect/#{identifier}.yml"))
+          Dissect.logger.info "Using #{identifier}.yml config file."
+        else
+          identifier="default"
+          regexes = YAML.load_file(File.join(root, "config/dissect/default.yml"))
+          Dissect.logger.info "Using the default.yml config file."
+        end
+
+        # create the hash output
+        keys_arr = regexes["#{regexes.keys[0]}"].keys
+        output = Hash[keys_arr.collect { |v| [v, empty_hash(v)] }]
+
+        # take the regexes from yaml
+        keys_arr.each do |name|
+          regexp = to_regexp regexes["#{regexes.keys[0]}"]["#{name}"]
+          match  = (str.scan2 regexp)[0].nil? ? "" : (str.scan2 regexp)[0]["#{name}"]
+          output[name] = match
+        end
+
+        # ----------------------------------------
+
+        analyzed = j @output
+
+        return @output    #hash
+        return analyzed   #json
       end
 
-      orderno_reg = to_regexp regexes["#{sender}"]["orderno"]
-      qty_reg     = to_regexp regexes["#{sender}"]["qty"]
-      vat_reg     = to_regexp regexes["#{sender}"]["vat"]
-
-      # ----------------------------------------
-
-      order_no = (str.scan2 orderno_reg)[0].nil? ? "no order number found" : (str.scan2 orderno_reg)[0]["ordernumber"]
-
-      quantity = (str.scan2 qty_reg)[0].nil? ? "no item quantity found" : (str.scan2 qty_reg)[0]["quantity"]
-
-      vat = (str.scan2 vat_reg)[0].nil? ? "no vat found" : (str.scan2 vat_reg)[0]["vat"]
-
-      @price_hash["cent"] = @price_hash["cent"].nil? ? ".00" : @price_hash["cent"]
-      price = @price_hash["dec"]+@price_hash["cent"]
-      @price_hash["cu"] = @price_hash["cu"]=~/eu.*?/i ? "€" : @price_hash["cu"]
-      currency = @price_hash["cu"]
-  
-      result order_no, quantity, vat, price, currency
-      # puts @output
-      analyzed = j @output
-
-      return @output
-      return analyzed
     end
 
   end

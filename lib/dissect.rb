@@ -30,10 +30,16 @@ module Dissect
       ""
     end
 
-    def to_plaintext(mail)
-      mailhtml = mail.body.decoded.gsub(/"/, '')
-      @str  = Nokogiri::HTML(mailhtml).text
-      return @str
+    def to_plaintext(data, input_type)
+      if input_type == "email"
+        mailhtml = data.body.decoded.gsub(/"/, '')
+        str = Nokogiri::HTML(mailhtml).text
+      elsif input_type == "xml"
+        str = Nokogiri::XML(mailhtml).text
+      else
+        str = data
+      end
+      return str
     end
 
     def to_regexp(yaml)
@@ -45,7 +51,7 @@ module Dissect
     end
 
     def root
-      File.expand_path '../..', __FILE__
+      File.expand_path '../../..', __FILE__
     end
 
     # maybe better -> identifier as dir and inside a yml file
@@ -53,32 +59,37 @@ module Dissect
     #   Dir.mkdir(File.join(root, "config/dissect")) unless File.exists?(File.join(root, "config/dissect"))
     # end
 
-    def process(data, identifier, input_type = "email", output_type = "json")
-      puts 'data: ' + data
-      puts 'identifier: '  + identifier.join(",")
-      puts 'input_type: '  + input_type
-      puts 'output_type: ' + output_type
+    def process(data, identifier = ['default'], input_type = "email", output_type = "json")
+      # puts 'data: ' + data
+       puts 'identifier: '  + identifier.join("/")
+       puts 'input_type: '  + input_type
+       puts 'output_type: ' + output_type
 
       Dir.mkdir(File.join(root, "config/dissect")) unless File.exists?(File.join(root, "config/dissect"))
 
       unless data.nil? or data == ""
-        if input_type == "email"
-          str    = to_plaintext(data)
-        elsif input_type == "xml"
-          p "do something for xml parsing"
-        elsif input_type == "text"
-          p "do something for plain text input"
+        identifier  = identifier.last
+        input_type_valid  = ["email", "xml", "text"]
+        output_type_valid = ["json", "xml"]
+        unless input_type_valid.include?(input_type) and output_type_valid.include?(output_type)
+          raise "Wrong type of input or output parameter"
         end
 
+        str = to_plaintext(data, input_type)
 
         # which config file to use?
-        if File.exists?(File.expand_path("../config/#{identifier}.yml"))
-          regexes = YAML.load_file(File.join(root, "config/dissect/#{identifier}.yml"))
-          Dissect.logger.info "Using #{identifier}.yml config file."
+        if identifier.nil?
+          Dissect.logger.fatal { "Argument 'identifier' not given. \n
+            Give the name of the config YML file under config/dissect directory" }
+          raise "Error: Argument identifier in nil "
         else
-          identifier="default"
-          regexes = YAML.load_file(File.join(root, "config/dissect/default.yml"))
-          Dissect.logger.info "Using the default.yml config file."
+          begin
+            regexes = YAML.load_file(File.join(root, "config/dissect/#{identifier}.yml"))
+            Dissect.logger.info "Using #{identifier}.yml config file."
+          rescue => err
+            puts "Exception: #{err}"
+            Dissect.logger.fatal "Exception: #{err.backtrace}"
+          end
         end
 
         # create the hash output
@@ -94,12 +105,11 @@ module Dissect
 
         # ----------------------------------------
 
-        analyzed = j @output
+        analyzed = j output
 
-        return @output    #hash
+        # return output     #hash
         return analyzed   #json
       end
-
     end
 
   end

@@ -36,7 +36,9 @@ module Dissect
       end
     end
 
+
     get '/_dissect' do
+      @root = Dissect::root
       @title = "Dissect"
       respond_to do |format|
         format.html do
@@ -46,9 +48,9 @@ module Dissect
     end
 
     post '/_dissect' do
-      @dissector = params[:dissector]
-      @regex = YAML.load_file(File.expand_path(@dissector))
-      partner_host = File.basename(@dissector, '.*')
+      dissector = params[:dissector]
+      @regex = YAML.load_file(File.join(@root, "config/dissect/#{dissector}.yml"))
+      partner_host = File.basename(dissector, '.*')
       @partner_host = partner_host
       regkeys = @regex["#{partner_host}"].keys
       @regkeys = regkeys
@@ -118,7 +120,7 @@ module Dissect
     end
 
     #test dissect
-    get '/testme' do
+    get '/_dissect/testme' do
       respond_to do |format|
         format.html do
           erb :'testme'
@@ -126,7 +128,7 @@ module Dissect
       end
     end
 
-    post '/testme' do
+    post '/_dissect/testme' do
       email = params[:email]
       start = Time.now
       results = Dissect.process(email)

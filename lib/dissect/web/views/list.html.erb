@@ -3,16 +3,16 @@
 
 <!-- /////////////////////////drop down with identifiers/////////////////////////////// -->
 
-      <%files = Dir.glob(File.expand_path("../dissect/lib/config**/*"))%>
+      <%files =  Dir.glob(File.join(@root, "config/dissect/*"))%>
 
       <form action="/" method="post" name="aform" id="aform">
         <fieldset>
         <legend>Choose a RegExp Set</legend>
         <div class="form-horizontal">
           <select name="dissector">
-            <option value="generic.yml" selected="selected">Select a set...</option>
+            <option value="default.yml" selected="selected">Select a set...</option>
             <% files.each do |ymlfile| %>
-            <option value=<%=ymlfile%>><%=File.basename(ymlfile, '.*')%></option>
+            <option value=<%=File.basename(ymlfile, '.*')%>><%=File.basename(ymlfile, '.*')%></option>
             <% end %>
           </select>
           <input class="btn" Type="submit" value="Show the regexes" />

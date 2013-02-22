@@ -34,6 +34,7 @@ module Dissect
       if input_type == "email"
         mailhtml = data.body.decoded.gsub(/"/, '')
         str = Nokogiri::HTML(mailhtml).text
+        str = str.gsub(/\n+|\r+|\t+/, "").squeeze("\n").strip.gsub(/\s{2,}/, ' ')
       elsif input_type == "xml"
         str = Nokogiri::XML(mailhtml).text
       else
@@ -48,6 +49,21 @@ module Dissect
         (split[2].include?("i") ? ::Regexp::IGNORECASE : 0) |
         (split[2].include?("m") ? ::Regexp::MULTILINE : 0) unless split[2].nil?
         ::Regexp.new(split[1], options)
+    end
+
+    def to_xml(hash)
+      builder = Nokogiri::XML::Builder.new do
+        contents {
+          hash.each {|key,value|
+            content(:id => key) {
+              string {
+                text value
+              }
+            }
+          }
+        }
+      end
+    return builder.to_xml()
     end
 
     def root
@@ -97,18 +113,32 @@ module Dissect
         output = Hash[keys_arr.collect { |v| [v, empty_hash(v)] }]
 
         # take the regexes from yaml
+        # accept all types of regexes -> non-capturing groups - named capturing groups - no groups
         keys_arr.each do |name|
           regexp = to_regexp regexes["#{regexes.keys[0]}"]["#{name}"]
-          match  = (str.scan2 regexp)[0].nil? ? "" : (str.scan2 regexp)[0]["#{name}"]
+          if regexp.named_captures.values.size > 1
+            match = (str.scan2 regexp)[0].nil? ? "" : (str.scan2 regexp)[0]
+            p "scan2"
+          elsif regexp.named_captures.values.size == 1
+            match = (str.scan regexp)[0].nil? ? "" : (str.scan regexp)[0][0]
+            p "snan[0]"
+          else
+            match = ((str.scan regexp)[0].nil? ? "" : (str.scan regexp)).each &:compact!
+            match = match[0][0] if match.size == 1
+            p "scan"
+          end
           output[name] = match
         end
 
         # ----------------------------------------
 
-        analyzed = j output
+        if output_type == "json"
+          analyzed = jj output
+        else
+          analyzed = to_xml(output)
+        end
 
-        # return output     #hash
-        return analyzed   #json
+        return analyzed
       end
     end
 

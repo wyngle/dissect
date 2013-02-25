@@ -86,8 +86,41 @@ describe Dissect do
     end
   end
 
+  before :each do
+    regexes = YAML.load_file(File.expand_path("spec/test_files/test.yml"))
+    str     = "phone number: 111-123-4567"
+    @output = Dissect.parser(regexes, str)
+    @result_json  = Dissect.result(@output, "json")
+    # @result_xml   = Dissect.result(@output, "xml")
+  end
+
+  describe '#parser' do
+    it "should return a hash with matches" do
+      @output.should be_an_instance_of(Hash)
+      @output == {"named_cg"=>{"first_digits"=>"111", "second_digits"=>"123", "third_digits"=>"4567"},
+      "non_named_cg"=>"4",
+      "one_named_cg"=>"4567",
+      "none_named_cg"=>["111", "123", "4567"],
+      "no_cg"=>[" ", ":", " ", "-", "-"]}
+    end
+  end
+
+  # it prints things -fix it
+  describe '#result' do
+    it "should be a correct json" do
+      @result_json == @output.to_json
+    end
+    # it "should be a  correct xml" do
+    #   @result_xml.should have_tag("<content>")
+    # end
+  end
+
   # describe '#process' do
-  #   process.should_receive(:identifier).with(instance_of(Array) )
+  #   # process.should_receive(:identifier).with(instance_of(Array) )
+  #   it "should have correct arguments" do
+  #     # Dissect.process.should_receive(:identifier).with(1, kind_of(Array), "b")
+  #     Dissect.process.should_receive(:identifier).with(kind_of(Array))
+  #   end
   #   # Dissect.process("a",["2"],"b","c")
   # end
   # describe '#process' do

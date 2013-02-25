@@ -33,6 +33,8 @@ module Dissect
     def to_plaintext(data, input_type)
       if input_type == "email"
         mailhtml = data.body.decoded.gsub(/"/, '')
+        # write a better regex to determine if base64
+        raise "Email is encoded with base64 and could not be parsed" if mailhtml=~/encoding: base64/i
         str = Nokogiri::HTML(mailhtml).text
         str = str.gsub(/\n+|\r+|\t+/, "").squeeze("\n").strip.gsub(/\s{2,}/, ' ')
       elsif input_type == "xml"
@@ -75,6 +77,42 @@ module Dissect
     #   Dir.mkdir(File.join(root, "config/dissect")) unless File.exists?(File.join(root, "config/dissect"))
     # end
 
+    def result(hash, output_type)
+      if output_type == "xml"
+        analyzed = to_xml(hash)
+      else
+        analyzed = hash.to_json
+        jj hash
+      end
+    end
+
+    def parser(regexes, str)
+      # create the hash output
+      keys_arr = regexes["#{regexes.keys[0]}"].keys
+      output = Hash[keys_arr.collect { |v| [v, empty_hash(v)] }]
+
+      # take the regexes from yaml
+      # accept all types of regexes -> non-capturing groups - named capturing groups - no groups
+      #
+      keys_arr.each do |name|
+        regexp = to_regexp regexes["#{regexes.keys[0]}"]["#{name}"]
+        if regexp.named_captures.values.size > 1
+          match = (str.scan2 regexp)[0].nil? ? "" : (str.scan2 regexp)[0]
+        elsif regexp.named_captures.values.size == 1
+          match = (str.scan regexp)[0].nil? ? "" : (str.scan regexp)[0][0]
+        else  #with non-named groups or no groups at all
+          if (str.scan regexp)[0].kind_of?(Array)
+            match = (str.scan regexp)[0].nil? ? "" : (str.scan regexp)[0].compact
+            match = match[0][0] if match.size == 1
+          else
+            match = str.scan regexp
+          end
+        end
+        output[name] = match
+      end
+      @output = output
+    end
+
     def process(data, identifier = ['default'], input_type = "email", output_type = "json")
       # puts 'data: ' + data
        puts 'identifier: '  + identifier.join("/")
@@ -88,7 +126,8 @@ module Dissect
         input_type_valid  = ["email", "xml", "text"]
         output_type_valid = ["json", "xml"]
         unless input_type_valid.include?(input_type) and output_type_valid.include?(output_type)
-          raise "Wrong type of input or output parameter"
+          raise "Wrong type of input or output parameter\nValid Types\nInput:#{input_type_valid}
+          \nOutput:#{output_type_valid} "
         end
 
         str = to_plaintext(data, input_type)
@@ -97,7 +136,7 @@ module Dissect
         if identifier.nil?
           Dissect.logger.fatal { "Argument 'identifier' not given. \n
             Give the name of the config YML file under config/dissect directory" }
-          raise "Error: Argument identifier in nil "
+          raise "Error: Argument identifier is nil "
         else
           begin
             regexes = YAML.load_file(File.join(root, "config/dissect/#{identifier}.yml"))
@@ -108,37 +147,11 @@ module Dissect
           end
         end
 
-        # create the hash output
-        keys_arr = regexes["#{regexes.keys[0]}"].keys
-        output = Hash[keys_arr.collect { |v| [v, empty_hash(v)] }]
+        parser regexes, str
 
-        # take the regexes from yaml
-        # accept all types of regexes -> non-capturing groups - named capturing groups - no groups
-        keys_arr.each do |name|
-          regexp = to_regexp regexes["#{regexes.keys[0]}"]["#{name}"]
-          if regexp.named_captures.values.size > 1
-            match = (str.scan2 regexp)[0].nil? ? "" : (str.scan2 regexp)[0]
-            p "scan2"
-          elsif regexp.named_captures.values.size == 1
-            match = (str.scan regexp)[0].nil? ? "" : (str.scan regexp)[0][0]
-            p "snan[0]"
-          else
-            match = ((str.scan regexp)[0].nil? ? "" : (str.scan regexp)).each &:compact!
-            match = match[0][0] if match.size == 1
-            p "scan"
-          end
-          output[name] = match
-        end
+        result @output, output_type
 
-        # ----------------------------------------
-
-        if output_type == "json"
-          analyzed = jj output
-        else
-          analyzed = to_xml(output)
-        end
-
-        return analyzed
+        # return analyzed
       end
     end
 

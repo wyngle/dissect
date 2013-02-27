@@ -1,19 +1,20 @@
 <html>
   <body>
 
-<!-- /////////////////////////drop down with partners/////////////////////////////// -->
+<!-- /////////////////////////drop down with identifiers/////////////////////////////// -->
+      <%=@regex%>
+      <%=@dissector%>
 
-      <%files = Dir.glob(File.expand_path("../dissect/lib/config**/*"))%>
-
-      <form action="/" method="post" name="aform" id="aform">
+      <form action="/_dissect" method="post" name="aform" id="aform">
+      <%files =  Dir.glob("/home/rp0/thegem/config/dissect/*")%>
         <fieldset>
         <legend>Choose a RegExp Set</legend>
         <div class="form-horizontal">
           <select name="dissector">
-                <option value="generic.yml" selected="selected">Select a set...</option>
-                <% files.each do |ymlfile| %>
-                <option value=<%=ymlfile%>><%=File.basename(ymlfile, '.*')%></option>
-                <% end %>
+            <option value="default.yml" selected="selected">Select a set...</option>
+            <% files.each do |ymlfile| %>
+            <option value=<%=File.basename(ymlfile, '.*')%>><%=File.basename(ymlfile, '.*')%></option>
+            <% end %>
           </select>
           <input class="btn" Type="submit" value="Show the regexes" />
           </div>
@@ -47,8 +48,8 @@
                 <td><%= i %></td>
                 <td><%= elem %></td>
                 <td id="reg"><%= instance_variable_get("@" + elem) %></td>
-                <td><button id="saveit">save</button></td>
-                <td><button class="btn btn-info pull-right" onclick='onSubmitClick(reg); return false'>Load me To the Tester</button></td>
+                <td><input id="save_b" type="button" value="Save" /></td>
+                <td><button class="btn btn-info pull-right click-to-select">Load me To the Tester</button></td>
               </tr>
             <% end %>
           <% end %>
@@ -77,6 +78,14 @@
       </div>
 
 <!-- /////////////////////////////////JS//////////////////////////////////////////// -->
+
+    <!-- load to the tester -->
+    <script>
+      $('.click-to-select').click(function() {
+        var id = $(this).closest('tr').find('td.reg').text();
+        $('#regex').val(id)
+      });
+    </script>
 
     <!-- load email to the regex tester -->
     <script>
@@ -114,7 +123,7 @@
       function check_regex() {
         var regexVal = $('#regex').val(),
           subjectVal = $('#subject').val();
-          $.post("/regex", { regex : regexVal, subject : subjectVal },
+          $.post("/_dissect/regex", { regex : regexVal, subject : subjectVal },
           function(data) {
             $('#resultt').html(data.resp);
             // var result =  jQuery.parseJSON(data);
@@ -143,42 +152,6 @@
         })
     </script>
 
-
-    <!-- ajax post on change -->
-    <script>
-    // $(document).ready(function() {
-    //     $("#dissector").change(function() {
-    //         var strSelected = "";
-    //         $("#dissector option:selected").each(function() {
-    //             strSelected += $(this)[0].value;
-    //         });
-    //         // var url = "/Home/MyAction/" + strSelected;
-
-    //         $.post("/", { slec : strSelected},
-    //           function(data) {
-    //             $('#regs').html(data.resp);
-    //         });
-    //     });
-    // });
-
-
-    // $(function (){
-    //         $('#aform').submit(function(ev){
-    //           //prevent the default behavior of a form (it should do nothing in our case)
-    //           ev.preventDefault();
-    //           $.ajax({
-    //             url: "/",
-    //             data: $(this).serialize(),
-    //             //could be json too
-    //             dataType: "html",
-    //             success: function(data) {
-    //               // $('#subject').html(data);
-    //             }
-    //           });
-    //         });
-    //       });
-    </script>
-
     <!-- edit regexes in the table -->
     <script>
 
@@ -196,17 +169,39 @@
 
     <!-- save the regexes -->
     <script>
-        $(function (){
-          $('#saveit').submit(function(ev){
-            ev.preventDefault();
-            var save = (document.getElementById('td[id="reg"]').value);
+        // $(function (){
+        //   $('#saveit').submit(function(ev){
+        //     ev.preventDefault();
+        //     var save = (document.getElementById('td[id="reg"]').value);
 
-            $.post("/save", { reg : save });
-            function(data) {
-                $('#saveit').html(data.resp);
-            });
-          });
+        //     $.post("/save", { reg : save });
+        //     function(data) {
+        //         $('#saveit').html(data.resp);
+        //     });
+        //   });
+        // });
+    </script>
+
+
+    <script>
+      $(document).ready(function () {
+        $('#save_b').click(function(e){
+          e.preventDefault();
+          e.stopPropagation();
+          savefunct();
         });
+      });
+
+      function savefunct() {
+        $.ajax({
+          type: "POST",
+          url: "/save",
+          data: {reg : $(this).closest('tr').find('td.reg').text()},
+          success: function (response) {
+            alert ("successfully saved");
+          }
+        });
+      }
     </script>
 
   </body>

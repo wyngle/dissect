@@ -14,7 +14,7 @@ describe 'Dissect dashboard' do
   end
 
   it "should load the testme page" do
-    get '/testme'
+    get '/_dissect/testme'
     last_response.should be_ok
   end
 

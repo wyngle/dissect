@@ -36,8 +36,10 @@ module Dissect
       end
     end
 
+
     get '/_dissect' do
-      @title = "Dissect" 
+      @root = Dissect.root
+      @title = "Dissect"
       respond_to do |format|
         format.html do
           erb :list
@@ -46,14 +48,12 @@ module Dissect
     end
 
     post '/_dissect' do
-      @dissector = params[:dissector]
-      @regex = YAML.load_file(File.expand_path(@dissector))
-      partner_host = File.basename(@dissector, '.*')
-      @partner_host = partner_host
-      regkeys = @regex["#{partner_host}"].keys
+      dissector = params[:dissector]
+      regexes = Dissect::regex_loader(dissector)
+      regkeys = regexes["#{regexes.keys[0]}"].keys
       @regkeys = regkeys
       regkeys.each do |name|
-        instance_variable_set("@" + name, @regex["#{partner_host}"]["#{name}"])
+        instance_variable_set("@" + name, regexes["#{regexes.keys[0]}"]["#{name}"])
       end
       @id = "#"
       @name = "Name"
@@ -62,16 +62,6 @@ module Dissect
       respond_to do |format|
         format.html do
           erb :list
-        end
-      end
-    end
-
-
-    get '/dropdown' do
-      @select = params[:selected]
-      respond_to do |format|
-        format.html do
-          erb :dropdown
         end
       end
     end
@@ -94,11 +84,11 @@ module Dissect
     get '/_dissect/email' do
       @mail = params[:mail]
       @email = Mail.read(@mail)
-      @str_mail = Dissect.to_plaintext(@email)
+      # @str_mail = Dissect.to_plaintext(@email, "email")
     end
 
     # regex tester
-    post '/regex' do
+    post '/_dissect/regex' do
       if !request.params["regex"].empty?
         # pattern = Regexp.new(params[:regex])
         begin
@@ -126,10 +116,12 @@ module Dissect
       end
     end
 
-
     #test dissect
-
-    get '/testme' do
+    get '/_dissect/testme' do
+      @root = Dissect::root
+      # @identifier =  Dir.glob(File.join(@root, "config/dissect/*"))
+      @valid_input  = Dissect::valid_input_types
+      @valid_output = Dissect::valid_output_types
       respond_to do |format|
         format.html do
           erb :'testme'
@@ -137,10 +129,18 @@ module Dissect
       end
     end
 
-    post '/testme' do
-      email = params[:email]
+    post '/_dissect/testme' do
+      data = params[:data]
+      identifier = params[:identifier].split(",")
+      # data = identifier = "email" ? Mail.new(params[:data]) : params[:data]
+      input_type = params[:input_type]
+      output_type = params[:output_type]
+
+      @valid_input  = Dissect::valid_input_types
+      @valid_output = Dissect::valid_output_types
+
       start = Time.now
-      results = Dissect.process(email)
+      results = Dissect.process(data, identifier, input_type, output_type)
       @bench = "Time elapsed: #{Time.now - start} seconds"
 
       class Hash

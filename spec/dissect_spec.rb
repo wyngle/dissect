@@ -115,6 +115,12 @@ describe Dissect do
     # end
   end
 
+  describe '#process' do
+    it "should raise ArgumentError" do
+      expect{ Dissect.process.validate_arguments(nil) }.to raise_error(ArgumentError)
+    end
+  end
+
   # describe '#process' do
   #   # process.should_receive(:identifier).with(instance_of(Array) )
   #   it "should have correct arguments" do

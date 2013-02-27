@@ -77,25 +77,28 @@ module Dissect
     #   Dir.mkdir(File.join(root, "config/dissect")) unless File.exists?(File.join(root, "config/dissect"))
     # end
 
-    def result(hash, output_type)
-      if output_type == "xml"
-        analyzed = to_xml(hash)
-      else
-        analyzed = hash.to_json
-        jj hash
-      end
+    def set_config_paths
+      @config_file_path = "config/dissect/"
     end
 
-    def parser(regexes, str)
+    def valid_input_types
+      @valid_input  = ["email", "xml", "text"]
+    end
+
+    def valid_output_types
+      @valid_output = ["json", "xml"]
+    end
+
+    def parser(reg, str)
       # create the hash output
-      keys_arr = regexes["#{regexes.keys[0]}"].keys
+      keys_arr = reg["#{reg.keys[0]}"].keys
       output = Hash[keys_arr.collect { |v| [v, empty_hash(v)] }]
 
       # take the regexes from yaml
       # accept all types of regexes -> non-capturing groups - named capturing groups - no groups
       #
       keys_arr.each do |name|
-        regexp = to_regexp regexes["#{regexes.keys[0]}"]["#{name}"]
+        regexp = to_regexp reg["#{reg.keys[0]}"]["#{name}"]
         if regexp.named_captures.values.size > 1
           match = (str.scan2 regexp)[0].nil? ? "" : (str.scan2 regexp)[0]
         elsif regexp.named_captures.values.size == 1
@@ -113,21 +116,41 @@ module Dissect
       @output = output
     end
 
+    def result(hash, output_type)
+      if output_type == "xml"
+        @analyzed = to_xml(hash)
+      else
+        @analyzed = JSON.pretty_generate(hash)
+        # jj hash
+      end
+    end
+
+    def regex_loader(identifier)
+      begin
+        @regexes = YAML.load_file(File.join(root, "config/dissect/#{identifier}.yml"))
+        Dissect.logger.info "Using #{identifier}.yml config file."
+      rescue => err
+        puts "Exception: #{err}"
+        Dissect.logger.fatal "Exception: #{err.backtrace}"
+      end
+      return @regexes
+    end
+
     def process(data, identifier = ['default'], input_type = "email", output_type = "json")
       # puts 'data: ' + data
-       puts 'identifier: '  + identifier.join("/")
-       puts 'input_type: '  + input_type
-       puts 'output_type: ' + output_type
+      puts 'identifier: '  + identifier.join("/")
+      puts 'input_type: '  + input_type
+      puts 'output_type: ' + output_type
 
       Dir.mkdir(File.join(root, "config/dissect")) unless File.exists?(File.join(root, "config/dissect"))
 
       unless data.nil? or data == ""
         identifier  = identifier.last
-        input_type_valid  = ["email", "xml", "text"]
-        output_type_valid = ["json", "xml"]
-        unless input_type_valid.include?(input_type) and output_type_valid.include?(output_type)
-          raise "Wrong type of input or output parameter\nValid Types\nInput:#{input_type_valid}
-          \nOutput:#{output_type_valid} "
+        # valid_input = @valid_input
+        # valid_output = @valid_output
+        unless valid_input_types.include?(input_type) and valid_output_types.include?(output_type)
+          raise "Wrong type of input or output parameter\nValid Types\nInput:#{valid_input_types}
+          \nOutput:#{valid_output_types} "
         end
 
         str = to_plaintext(data, input_type)
@@ -138,20 +161,14 @@ module Dissect
             Give the name of the config YML file under config/dissect directory" }
           raise "Error: Argument identifier is nil "
         else
-          begin
-            regexes = YAML.load_file(File.join(root, "config/dissect/#{identifier}.yml"))
-            Dissect.logger.info "Using #{identifier}.yml config file."
-          rescue => err
-            puts "Exception: #{err}"
-            Dissect.logger.fatal "Exception: #{err.backtrace}"
-          end
+          regex_loader identifier
         end
 
-        parser regexes, str
+        parser @regexes, str
 
         result @output, output_type
 
-        # return analyzed
+        return @analyzed
       end
     end
 

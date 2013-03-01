@@ -26,6 +26,10 @@ module Dissect
       @env ||= defined?(Rails) ? Rails.env : ENV['RACK_ENV'] || 'development'
     end
 
+    def root
+      File.expand_path '../../..', __FILE__
+    end
+
     def empty_hash(values)
       ""
     end
@@ -66,10 +70,6 @@ module Dissect
         }
       end
     return builder.to_xml()
-    end
-
-    def root
-      File.expand_path '../../..', __FILE__
     end
 
     # maybe better -> identifier as dir and inside a yml file
@@ -120,14 +120,15 @@ module Dissect
       if output_type == "xml"
         @analyzed = to_xml(hash)
       else
-        @analyzed = JSON.pretty_generate(hash)
+        @analyzed = hash.to_json
+        # @analyzed = JSON.pretty_generate(hash)
         # jj hash
       end
     end
 
     def regex_loader(identifier)
       begin
-        @regexes = YAML.load_file(File.join(root, "config/dissect/#{identifier}.yml"))
+        @regexes = YAML.load_file(File.join(root, set_config_paths, "#{identifier}.yml"))
         Dissect.logger.info "Using #{identifier}.yml config file."
       rescue => err
         puts "Exception: #{err}"
@@ -142,12 +143,13 @@ module Dissect
       puts 'input_type: '  + input_type
       puts 'output_type: ' + output_type
 
-      Dir.mkdir(File.join(root, "config/dissect")) unless File.exists?(File.join(root, "config/dissect"))
+      Dir.mkdir(File.join(root, set_config_paths)) unless File.exists?(File.join(root, set_config_paths))
 
-      unless data.nil? or data == ""
+      if data.nil? or data == ""
+        Dissect.logger.fatal { "There are no incoming data." }
+        raise "Error: Could not dissect for nil or empty data"
+      else
         identifier  = identifier.last
-        # valid_input = @valid_input
-        # valid_output = @valid_output
         unless valid_input_types.include?(input_type) and valid_output_types.include?(output_type)
           raise "Wrong type of input or output parameter\nValid Types\nInput:#{valid_input_types}
           \nOutput:#{valid_output_types} "
@@ -158,7 +160,7 @@ module Dissect
         # which config file to use?
         if identifier.nil?
           Dissect.logger.fatal { "Argument 'identifier' not given. \n
-            Give the name of the config YML file under config/dissect directory" }
+            Give the name of the config YML file under #{set_config_paths} directory" }
           raise "Error: Argument identifier is nil "
         else
           regex_loader identifier

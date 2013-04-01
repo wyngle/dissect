@@ -46,7 +46,7 @@ module Dissect
       if input_type == "email"
         transfer_encoding = data.parts.first.content_transfer_encoding if data.multipart?
         raise "Email is encoded with base64 and could not be parsed" if transfer_encoding == "base64"
-        if data.multipart? or @options["multiline?"] == false
+        if data.multipart?
           mailhtml = data.body.decoded.gsub(/"/, '')
           str = Nokogiri::HTML(mailhtml).text
           str = str.gsub(/\n+|\r+|\t+/, '').squeeze("\n").strip.gsub(/\s{2,}/, ' ')

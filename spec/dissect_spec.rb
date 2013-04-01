@@ -34,7 +34,7 @@ describe Dissect do
   end
 
 # TODO
-# put a multipart test_email and one bare one
+# put a multipart test_email and a bare one
   describe '#to_plaintext' do
     it "returns the EMAIL in plain text" do
       @str1.should_not match(/\A<[^<!]*>\z/)
@@ -89,9 +89,9 @@ describe Dissect do
   end
 
   before :each do
-    regexes = YAML.load_file(File.expand_path("spec/test_files/test.yml"))["test"]
+    @regexes = YAML.load_file(File.expand_path("spec/test_files/test.yml"))["non_fixed_structure"]["regexes"]
     str     = "phone number: 111-123-4567"
-    @output = Dissect.unstructured_parser(regexes, str)
+    @output = Dissect.unstructured_parser(@regexes, str)
     @result_json  = Dissect.result(@output, "json")
     # @result_xml   = Dissect.result(@output, "xml")
   end

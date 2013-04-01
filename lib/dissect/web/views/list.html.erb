@@ -31,13 +31,19 @@
       </script>
 
 
+      <style>
+        table { table-layout: fixed; }
+        table th, table td { overflow: hidden; }
+      </style>
+
       <table class="table">
         <thead>
           <tr>
-            <th><%= @id %></th>
-            <th><%= @name %></th>
-            <th><%= @reg %></th>
-            <th></th>
+            <th style="width: 2%"><%= @id %></th>
+            <th style="width: 10%"><%= @name %></th>
+            <th style="width: 50%"><%= @reg %></th>
+            <th style="width: 5%"></th>
+            <th style="width: 10%"></th>
           </tr>
         </thead>
         <tbody>

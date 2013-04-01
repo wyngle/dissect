@@ -33,9 +33,11 @@ describe Dissect do
     @test_reg3 = Dissect::to_regexp("/^\D*\d\D*\d/m")
   end
 
+# TODO
+# put a multipart test_email and one bare one
   describe '#to_plaintext' do
-    it "returns the EMAIL or the XML in plain text" do
-      @str1.should_not match(/<[^<!]*>/)
+    it "returns the EMAIL in plain text" do
+      @str1.should_not match(/\A<[^<!]*>\z/)
     end
   end
 
@@ -87,14 +89,14 @@ describe Dissect do
   end
 
   before :each do
-    regexes = YAML.load_file(File.expand_path("spec/test_files/test.yml"))
+    regexes = YAML.load_file(File.expand_path("spec/test_files/test.yml"))["test"]
     str     = "phone number: 111-123-4567"
-    @output = Dissect.parser(regexes, str)
+    @output = Dissect.unstructured_parser(regexes, str)
     @result_json  = Dissect.result(@output, "json")
     # @result_xml   = Dissect.result(@output, "xml")
   end
 
-  describe '#parser' do
+  describe '#unstructured_parser' do
     it "should return a hash with matches" do
       @output.should be_an_instance_of(Hash)
       @output == {"named_cg"=>{"first_digits"=>"111", "second_digits"=>"123", "third_digits"=>"4567"},

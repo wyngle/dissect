@@ -17,12 +17,12 @@
              <span class="add-on">/</span>
               <input class="span8 offset2" id="regex" name="regulars[regex]" value="" type="text" placeholder="write your regexp here" required>
               <span class="add-on">/</span>
-              <input class="span1" id="option" name="new[option]" value="" type="text" placeholder="options">
+              <input class="span1" id="option" name="new[option]" value="" type="text" placeholder="options" pattern="[i|x|m]">
             </p>
           </div>
 
           <h1><a href="#" id="addReg">+</a></h2>
-         <button type="submit" class="btn">Submit</button>
+         <button type="submit" class="btn">Create</button>
       </fieldset>
     </form>
 
@@ -33,7 +33,7 @@
         var i = $('#regexes p').size() + 1;
 
         $('#addReg').live('click', function() {
-            $('<p><input class="span2" id="regname" name="names[regname_' + i +']" value="" type="text" placeholder="regexp name"> <span class="add-on">: </span><span class="add-on">/</span><input class="span8 offset2" id="regex" name="regulars[regex_' + i +']" value="" type="text" placeholder="write your regexp here"><span class="add-on">/</span><input class="span1" id="option" name="new[option_' + i +']" value="" type="text" placeholder="options"> <button class="btn btn-link" id="remReg">Remove</button></p>').appendTo(regDiv);
+            $('<p><input class="span2" id="regname" name="names[regname_' + i +']" value="" type="text" placeholder="regexp name" required> <span class="add-on">: </span><span class="add-on">/</span><input class="span8 offset2" id="regex" name="regulars[regex_' + i +']" value="" type="text" placeholder="write your regexp here" required><span class="add-on">/</span><input class="span1" id="option" name="new[option_' + i +']" value="" type="text" placeholder="options"> <button class="btn btn-link" id="remReg">Remove</button></p>').appendTo(regDiv);
             i++;
             return false;
         });

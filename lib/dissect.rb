@@ -34,13 +34,25 @@ module Dissect
       ""
     end
 
+    def categorize_emails
+
+    end
+
     def to_plaintext(data, input_type)
+
+      # TODO
+      # better condition to determine if fixed width
+
       if input_type == "email"
-        mailhtml = data.body.decoded.gsub(/"/, '')
-        # write a better regex to determine if base64
-        raise "Email is encoded with base64 and could not be parsed" if mailhtml=~/encoding: base64/i
-        str = Nokogiri::HTML(mailhtml).text
-        str = str.gsub(/\n+|\r+|\t+/, "").squeeze("\n").strip.gsub(/\s{2,}/, ' ')
+        transfer_encoding = data.parts.first.content_transfer_encoding if data.multipart?
+        raise "Email is encoded with base64 and could not be parsed" if transfer_encoding == "base64"
+        if data.multipart? or @options["multiline?"] == false
+          mailhtml = data.body.decoded.gsub(/"/, '')
+          str = Nokogiri::HTML(mailhtml).text
+          str = str.gsub(/\n+|\r+|\t+/, '').squeeze("\n").strip.gsub(/\s{2,}/, ' ')
+        else
+          str = data.body.decoded.gsub(/"/, '')
+        end
       elsif input_type == "xml"
         str = Nokogiri::XML(mailhtml).text
       else
@@ -72,6 +84,13 @@ module Dissect
     return builder.to_xml()
     end
 
+    # creates the regexp from the fixed width array given in the config file
+    def array_to_regexp(arr)
+      arr = arr.map { |x| "(.{" + x + "}?) " }
+      arr.push('/').unshift('/')
+      structure_reg = to_regexp(arr.join(""))
+    end
+
     # maybe better -> identifier as dir and inside a yml file
     # def create_config_dir(identifier)
     #   Dir.mkdir(File.join(root, "config/dissect")) unless File.exists?(File.join(root, "config/dissect"))
@@ -89,16 +108,57 @@ module Dissect
       @valid_output = ["json", "xml"]
     end
 
-    def parser(reg, str)
+    def fixed_width_parser(op, struct, str, reg)
+      out = []
+      str = str.scan(/(?<=#{op["parsing_start"]}).*?(?=#{op["parsing_end"]})/im)[0]
+
+      str.split("\n").each do |line|
+        line=line.ljust(op["max_line"])
+        m = array_to_regexp(struct).match(line).captures
+        if m[0] !~ /\A\s*\z/ and m[0] !~ /\A[-*]\z/
+          out << m
+        else
+          m.each_with_index do |x,i|
+            next unless x !~ /\A\s*\z/
+            out.last[i].rstrip
+            out.last[i] += x.lstrip
+          end
+        end
+      end
+
+      orderline = []
+      out.each do |o|
+       o.each_with_index do |i,idx|
+         order = i.strip.squeeze(' ')
+         orderline << order
+         @orderline = orderline
+         # print ', ' unless idx == o.size - 1
+       end
+      end
+
+      keys_arr = reg.keys
+      output = Hash[keys_arr.collect { |v| [v, empty_hash(v)] }]
+      order = @orderline.each_slice(struct.size).to_a
+
+      final = []
+      order.each do |orderl|
+        final << (Hash[*output.keys.zip(orderl).flatten])
+        @output  = final[0]
+      end
+
+    end
+
+    def unstructured_parser(reg, str)
+
       # create the hash output
-      keys_arr = reg["#{reg.keys[0]}"].keys
+      keys_arr = reg.keys
       output = Hash[keys_arr.collect { |v| [v, empty_hash(v)] }]
 
       # take the regexes from yaml
       # accept all types of regexes -> non-capturing groups - named capturing groups - no groups
       #
       keys_arr.each do |name|
-        regexp = to_regexp reg["#{reg.keys[0]}"]["#{name}"]
+        regexp = to_regexp reg["#{name}"]
         if regexp.named_captures.values.size > 1
           match = (str.scan2 regexp)[0].nil? ? "" : (str.scan2 regexp)[0]
         elsif regexp.named_captures.values.size == 1
@@ -128,14 +188,15 @@ module Dissect
 
     def regex_loader(identifier)
       begin
-        @regexes = YAML.load_file(File.join(root, set_config_paths, "#{identifier}.yml"))
+        yml = YAML.load_file(File.join(root, set_config_paths, "#{identifier}.yml"))
         Dissect.logger.info "Using #{identifier}.yml config file."
       rescue => err
         puts "Exception: #{err}"
         Dissect.logger.fatal "Exception: #{err.backtrace}"
       end
-      return @regexes
+      @yml_parsed = yml
     end
+
 
     def process(data, identifier = ['default'], input_type = "email", output_type = "json")
       # puts 'data: ' + data
@@ -155,7 +216,6 @@ module Dissect
           \nOutput:#{valid_output_types} "
         end
 
-        str = to_plaintext(data, input_type)
 
         # which config file to use?
         if identifier.nil?
@@ -166,7 +226,22 @@ module Dissect
           regex_loader identifier
         end
 
-        parser @regexes, str
+        # config file options - regexes for structured data
+        @options = @yml_parsed["fixed_structure"]["options"]
+
+        @rest_regexes  = @yml_parsed["fixed_structure"]["rest_regexp"]
+        @structure = @yml_parsed["fixed_structure"]["options"]["structure"].map(&:to_s)
+
+        # config file regexes for untructured data
+        @regexes = @yml_parsed["non_fixed_structure"]["regexes"]
+
+        str = to_plaintext(data, input_type)
+
+        if @options["multiple?"] or @options["multiline?"]
+          fixed_width_parser @options, @structure, str, @rest_regexes
+        else
+          unstructured_parser @regexes, str
+        end
 
         result @output, output_type
 

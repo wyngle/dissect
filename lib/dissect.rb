@@ -108,13 +108,13 @@ module Dissect
       @valid_output = ["json", "xml"]
     end
 
-    def fixed_width_parser(op, struct, str, reg)
+    def fixed_width_parser(op, struct, str)
       out = []
       str = str.scan(/(?<=#{op["parsing_start"]}).*?(?=#{op["parsing_end"]})/im)[0]
 
       str.split("\n").each do |line|
         line=line.ljust(op["max_line"])
-        m = array_to_regexp(struct).match(line).captures
+        m = array_to_regexp(struct.values.map(&:to_s)).match(line).captures
         if m[0] !~ /\A\s*\z/ and m[0] !~ /\A[-*]\z/
           out << m
         else
@@ -136,9 +136,9 @@ module Dissect
        end
       end
 
-      keys_arr = reg.keys
+      keys_arr = struct.keys
       output = Hash[keys_arr.collect { |v| [v, empty_hash(v)] }]
-      order = @orderline.each_slice(struct.size).to_a
+      order = @orderline.each_slice(struct.values.size).to_a
 
       final = []
       order.each do |orderl|
@@ -238,7 +238,7 @@ module Dissect
         str = to_plaintext(data, input_type)
 
         if @options["multiple?"] or @options["multiline?"]
-          fixed_width_parser @options, @structure, str, @rest_regexes
+          fixed_width_parser @options, @structure, str
         else
           unstructured_parser @regexes, str
         end

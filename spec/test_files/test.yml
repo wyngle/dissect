@@ -1,7 +1,7 @@
 # encoding: utf-8
-generic:
-  qty: /((?<test>\bqt.*?|\bqty.*?|\bquan.*?)|(\g<test>[:\s.*]))(?<quantity>\d+)/i
-  orderno: /(?<prev>\border.*?)(?<ordernumber>\d{2,20}(-\d+)*)/i
-  price: /(?<mplampla>(\btotal|\bsum|\bprice)\W*[a-z]*\W*)(?<cu>\beu[ro]*\W*|\€|\$|\£)(?<dec>[1-9]\d*|0)(?<cent>\.\d{1,2})?/i
-  vat: /(vat.*)(?<vat>\d+)/
-
+test:
+  named_cg: /\(?(?<first_digits>[0-9]{3})\)?[-. ]?(?<second_digits>[0-9]{3})[-. ]?(?<third_digits>[0-9]{4})$/
+  non_named_cg: /\(?(?:[0-9]{3})\)?[-. ]?(?:[0-9]{3})[-. ]?([0-9]{4})$/
+  one_named_cg: /\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?(?<last_digits>[0-9]{4})$/
+  none_named_cg: /\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/
+  no_cg:  /\W/

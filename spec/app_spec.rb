@@ -13,9 +13,24 @@ describe 'Dissect dashboard' do
     last_response.should be_ok
   end
 
-  it "should load the testme page" do
-    get '/testme'
+  it "should load the /testme page" do
+    get '/_dissect/testme'
     last_response.should be_ok
   end
+
+  it "should load the /new page" do
+    get '/_dissect/new'
+    last_response.should be_ok
+  end
+
+  # before :each do
+  #   post '/_dissect/new ', {:identifier => "test", :names => {"testreg", :new => "i", :regulars => "a\regex\d"}
+  # end
+
+  # it "should create a standard hash" do
+  #   last_response.body.should be_an_instance_of(Hash)
+  #   # should_receive(:create).with({:title => 'Mr'})
+  #   # post 'create' , :client => {"title" => "Mr" }
+  # end
 
 end

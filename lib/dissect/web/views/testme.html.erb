@@ -1,12 +1,66 @@
 <html>
   <body>
-    <div style="text-align: center" class="well span8 offset1">
-      <form class="form-inline" name="input" action='/testme' method='POST'>
-        <input style="font-size: 18px; height: auto;" class="input-xlarge" name="email" value='' type="text" placeholder="Enter E-mail to check">
+    <%#yml =  Dir.glob(File.join(@root, "config/dissect/*")).compact%>
+      <%yml =  Dir.glob("/home/rp0/thegem/config/dissect/*")%>
+    <div style="text-align: center" class="well span12">
+      <form class="form-inline" name="input" action='/_dissect/testme' method='POST'>
+
+        <!-- <input style="font-size: 18px; height: auto;" class="input-xlarge" name="data" value='' type="text" placeholder="Incoming Data"> -->
+
+
+        <select style="font-size: 18px; height: auto;" class="input-xlarge" name="input_type" value=''>
+          <% if @valid_input %>
+          <% @valid_input.each do |input_type| %>
+            <option value=<%=input_type%>><%=input_type%></option>
+          <% end %>
+          <% end %>
+        </select>
+
+        <select style="font-size: 18px; height: auto;" class="input-xlarge" name="output_type" value=''>
+          <% if @valid_output %>
+          <% @valid_output.each do |output_type| %>
+            <option value=<%=output_type%>><%=output_type%></option>
+          <% end %>
+          <% end %>
+        </select>
+
+        <select style="font-size: 18px; height: auto;" class="input-xlarge" name="identifier" value=''>
+          <% yml.each do |ymlfile| %>
+            <option value=<%=File.basename(ymlfile, '.*')%>><%=File.basename(ymlfile, '.*')%></option>
+          <% end %>
+        </select>
+
+        <textarea placeholder="Enter your text to match or choose an E-mail" name="data" id="data" class="input-block-level" rows="4"><%= @email %></textarea>
+
         <input class="btn btn-large btn-primary" type="submit" value="Submit">
+      </form>
+      <form class="form-inline" action="/_dissect/email" method="post" id="to_load">
+        <input placeholder="Enter email to load" name="email" type="text" class="input-medium">
+        <input class="btn" type="submit" value="Load!!">
       </form>
       <%=@bench%> <br>
       <%=@table%>
     </div>
+
+    <!-- load email to test dissect -->
+    <script>
+      $(function (){
+        $('#to_load').submit(function(ev){
+          //prevent the default behavior of a form (it should do nothing in our case)
+          ev.preventDefault();
+          $.ajax({
+            url: "/_dissect/email",
+            data: $(this).serialize(),
+            //could be json too
+            dataType: "html",
+            success: function(data) {
+              $('#subject').html(data);
+            }
+          });
+        });
+      return false;
+      });
+    </script>
+
   </body>
 </html>

@@ -107,7 +107,6 @@ module Dissect
 
     def fixed_width_parser(op, struct, str)
       out = []
-      p str
       str = str.scan(/(?<=#{op["parsing_start"]}).*?(?=#{op["parsing_end"]})/im)[0]
       str.split("\n").each do |line|
         line=line.ljust(op["max_line"])

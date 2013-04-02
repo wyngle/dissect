@@ -10,7 +10,7 @@ module Dissect
   end
 
   def self.setup_logger
-    logger = Logger.new File.expand_path('dissect.log')
+    logger = Logger.new File.expand_path(File.join(root, 'dissect.log'))
     logger.formatter = proc { |severity, datetime, progname, msg|
       "[#{datetime}] #{severity}: #{msg}\n"
     }

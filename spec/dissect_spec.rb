@@ -22,28 +22,44 @@ end
 describe Dissect do
 
   before :each do
-    mailhtml = Mail.read File.expand_path("spec/test_files/playorder.eml")
-    mailxml  = Mail.read File.expand_path("spec/test_files/playorder.eml")
+    # no multipart text email
+    mailtext = Mail.read File.expand_path("spec/test_files/text.eml")
+    # multipart - html
+    mailhtml = Mail.read File.expand_path("spec/test_files/multipart.eml")
+    # encoded
+    mailenc = Mail.read File.expand_path("spec/test_files/encoded.eml")
+    # multipart - xml
+    mailxml  = Mail.read File.expand_path("spec/test_files/xml.eml")
     input_type1 = "email"
     input_type2 = "xml"
+    arr = ["4", "11", "31", "14"]
     @str1 = Dissect::to_plaintext(mailhtml, input_type1)
     @str2 = Dissect::to_plaintext(mailxml, input_type2)
+    @str3 = Dissect::to_plaintext(mailxml, input_type1)
     @test_reg1 = Dissect::to_regexp("/^\D*\d\D*\d/i")
     @test_reg2 = Dissect::to_regexp("/^\D*\d\D*\d/x")
     @test_reg3 = Dissect::to_regexp("/^\D*\d\D*\d/m")
+    @arr_to_reg = Dissect::array_to_regexp(arr)
   end
 
-# TODO
-# put a multipart test_email and a bare one
+
   describe '#to_plaintext' do
     it "returns the EMAIL in plain text" do
-      @str1.should_not match(/\A<[^<!]*>\z/)
+      @str1.should be_an_instance_of(String)
+      @str1.should_not match(/<[^<!]*>/)
     end
-  end
 
-  describe '#to_plaintext' do
     it "returns the XML in plain text" do
+      @str2.should be_an_instance_of(String)
       @str2.should_not match(/<[^<!]*>/)
+    end
+
+    it "returns the text as text" do
+      @str3.should_not match(/<[^<!]*>/)
+    end
+
+    it "should raise" do
+      expect{Dissect::to_plaintext(mailenc, input_type1)}.to raise_error
     end
   end
 
@@ -58,6 +74,15 @@ describe Dissect do
     end
   end
 
+  describe '#array_to_regexp' do
+    it "returns one regex" do
+      @arr_to_reg.should be_an_instance_of(Regexp)
+      @arr_to_reg == /(.{4}?) (.{11}?) (.{31}?) (.{14}?) /
+    end
+  end
+
+# ##############################################################################
+
   before :each do
     ar = ["a", "b", "c"]
     @hash = Hash[ar.collect { |v| [v, Dissect::empty_hash(v)] }]
@@ -69,6 +94,8 @@ describe Dissect do
       @hash == {"a"=>"", "b"=>"", "c"=>""}
     end
   end
+
+# ##############################################################################
 
   before :each do
     root = Dissect::root
@@ -88,10 +115,17 @@ describe Dissect do
     end
   end
 
+# ##############################################################################
+
   before :each do
     @regexes = YAML.load_file(File.expand_path("spec/test_files/test.yml"))["non_fixed_structure"]["regexes"]
     str     = "phone number: 111-123-4567"
+    # options = YAML.load_file(File.expand_path("spec/test_files/test.yml"))["fixed_structure"]["options"]
+    # structure = YAML.load_file(File.expand_path("spec/test_files/test.yml"))["fixed_structure"]["options"]["structure"]
+    # str2    = ""
+
     @output = Dissect.unstructured_parser(@regexes, str)
+    # @output2 = Dissect.fixed_width_parser(options, structure, str2)
     @result_json  = Dissect.result(@output, "json")
     # @result_xml   = Dissect.result(@output, "xml")
   end
@@ -106,6 +140,12 @@ describe Dissect do
       "no_cg"=>[" ", ":", " ", "-", "-"]}
     end
   end
+
+  # describe '#fixed_width_parser' do
+  #   it "should return a hash with matches" do
+  #     @output2.should be_an_instance_of(Hash)
+  #   end
+  # end
 
   # it prints things -fix it
   describe '#result' do

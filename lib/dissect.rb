@@ -34,10 +34,6 @@ module Dissect
       ""
     end
 
-    def categorize_emails
-
-    end
-
     def to_plaintext(data, input_type)
 
       # TODO
@@ -45,6 +41,7 @@ module Dissect
 
       if input_type == "email"
         transfer_encoding = data.parts.first.content_transfer_encoding if data.multipart?
+        Dissect.logger.info "Email body from #{data.from} is encoded with base 64 and could not be parsed"
         raise "Email is encoded with base64 and could not be parsed" if transfer_encoding == "base64"
         if data.multipart?
           mailhtml = data.body.decoded.gsub(/"/, '')
@@ -108,13 +105,12 @@ module Dissect
       @valid_output = ["json", "xml"]
     end
 
-    def fixed_width_parser(op, struct, str, reg)
+    def fixed_width_parser(op, struct, str)
       out = []
       str = str.scan(/(?<=#{op["parsing_start"]}).*?(?=#{op["parsing_end"]})/im)[0]
-
       str.split("\n").each do |line|
         line=line.ljust(op["max_line"])
-        m = array_to_regexp(struct).match(line).captures
+        m = array_to_regexp(struct.values.map(&:to_s)).match(line).captures
         if m[0] !~ /\A\s*\z/ and m[0] !~ /\A[-*]\z/
           out << m
         else
@@ -136,16 +132,15 @@ module Dissect
        end
       end
 
-      keys_arr = reg.keys
+      keys_arr = struct.keys
       output = Hash[keys_arr.collect { |v| [v, empty_hash(v)] }]
-      order = @orderline.each_slice(struct.size).to_a
+      order = @orderline.each_slice(struct.values.size).to_a
 
       final = []
       order.each do |orderl|
         final << (Hash[*output.keys.zip(orderl).flatten])
-        @output  = final[0]
       end
-
+      @output_stru = @options["multiple?"] ? Hash[@options["name"],final] : final[0]
     end
 
     def unstructured_parser(reg, str)
@@ -173,7 +168,7 @@ module Dissect
         end
         output[name] = match
       end
-      @output = output
+      @output_unstru = output
     end
 
     def result(hash, output_type)
@@ -229,8 +224,8 @@ module Dissect
         # config file options - regexes for structured data
         @options = @yml_parsed["fixed_structure"]["options"]
 
-        @rest_regexes  = @yml_parsed["fixed_structure"]["rest_regexp"]
-        @structure = @yml_parsed["fixed_structure"]["options"]["structure"].map(&:to_s)
+        @rest_regexes  = @yml_parsed["fixed_structure"]["rest_regexes"]
+        @structure = @yml_parsed["fixed_structure"]["options"]["structure"]
 
         # config file regexes for untructured data
         @regexes = @yml_parsed["non_fixed_structure"]["regexes"]
@@ -238,9 +233,16 @@ module Dissect
         str = to_plaintext(data, input_type)
 
         if @options["multiple?"] or @options["multiline?"]
-          fixed_width_parser @options, @structure, str, @rest_regexes
+          fixed_width_parser @options, @structure, str
+          if @options["has_also_unstructured_data?"]
+            unstructured_parser @rest_regexes, str
+            @output = @output_stru.merge(@output_unstru)
+          else
+            @output = @output_stru
+          end
         else
           unstructured_parser @regexes, str
+          @output = @output_unstru
         end
 
         result @output, output_type

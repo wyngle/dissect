@@ -4,6 +4,7 @@ pkg/*
 ######################
 *.log
 log/*.log
+coverage
 
 # OS generated files #
 ######################

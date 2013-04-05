@@ -3,13 +3,13 @@
   fixed_structure:
     options:
       # more than one rows?
-      multiple?: true
+      multiple?: false
       # name for the multiple rows content (eg: {#{name} => [{"a"=>1, "b"=>2}]} )
       name: "ordelines"
       # row wraps?
-      multiline?: true
+      multiline?: false
       # need to parse and some unstructure data with regexes?
-      has_also_unstructured_data?: true
+      has_also_unstructured_data?: false
       # strucrure of fixed width table - number of captured groups = number of fields
       structure: {qty: 4, sku: 11, description: 31, price: 14}
       # orderline data start - end (will not be included)

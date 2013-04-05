@@ -240,7 +240,12 @@ module Dissect
         structure = @yml_parsed["fixed_structure"]["options"]["structure"]
 
         # config file regexes for untructured data
-        regexes = @yml_parsed["non_fixed_structure"]["regexes"].empty? ? raise "No regexes found." : @yml_parsed["non_fixed_structure"]["regexes"]
+        if @yml_parsed["non_fixed_structure"]["regexes"].empty?
+          raise "No regexes found."
+        else
+          regexes = @yml_parsed["non_fixed_structure"]["regexes"]
+        end
+        # regexes = @yml_parsed["non_fixed_structure"]["regexes"].empty? ? raise "No regexes found." : @yml_parsed["non_fixed_structure"]["regexes"]
 
         str = to_plaintext(data, input_type)
 

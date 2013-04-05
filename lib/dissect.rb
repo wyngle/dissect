@@ -202,7 +202,7 @@ module Dissect
       files =  Dir.glob(File.join(root, set_config_paths) + "*")
       valid_identifiers = []
       files.each do |fi|
-        valid_identifiers << File.basename(fi, '.*')
+        valid_identifiers << File.basename(fi, '.*').downcase
       end
       return valid_identifiers
     end
@@ -216,12 +216,14 @@ module Dissect
         Dissect.logger.fatal { "There are no incoming data." }
         raise "Error: Could not dissect for nil or empty data"
       else
-        unless valid_input_types.include?(input_type) and valid_output_types.include?(output_type)
+        # Case-insensitive parameter check
+        unless valid_input_types.any?{ |s| s.casecmp(input_type)==0 } and valid_output_types.any?{ |s| s.casecmp(output_type)==0 }
           raise "Wrong type of input or output parameter\nValid Types\nInput:#{valid_input_types}
           \nOutput:#{valid_output_types} "
         end
-        identifier  = identifier.last unless identifier.nil?
+        identifier = File.basename(identifier.last.split("/").last, '.yml').downcase unless identifier.nil?
         # which config file to use?
+
         unless valid_identifier.include?(identifier)
           Dissect.logger.fatal { "Argument 'identifier' not given or does not exist. \n
             Give the name of the config YML file under #{set_config_paths} directory" }

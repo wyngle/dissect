@@ -15,17 +15,5 @@ Date: Thu, 13 Dec 2012 16:02:42 +0100 (CET)
 
 Dear Mr. User,
 
-Thank you for your order at testing.com!
-The order has the following ordernumber: #550510
-
-
-
-Please find below the details regarding your order:
-
-            Name: user
-   Email address: user@test.com
-
-
-Quan  Item No.    Description                            Price        Extension
----- ----------- ------------------------------- -------------- ---------------
-
+test "body"! just for @testing
+----

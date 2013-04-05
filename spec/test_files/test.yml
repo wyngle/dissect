@@ -7,24 +7,25 @@
       # name for the multiple rows content (eg: {#{name} => [{"a"=>1, "b"=>2}]} )
       name: "ordelines"
       # row wraps?
-      multiline?: false
+      multiline?: true
       # need to parse and some unstructure data with regexes?
       has_also_unstructured_data?: true
       # strucrure of fixed width table - number of captured groups = number of fields
       structure: {qty: 4, sku: 11, description: 31, price: 14}
       # orderline data start - end (will not be included)
-      parsing_start: "-\n"
-      parsing_end: "SUBTOTAL"
+      parsing_start: "startt"
+      parsing_end: "endd"
       # max length of order line in bytes
       max_line: 80
       # if the multiline orderline seperates with something else than whitespace charachters
       nextmatch_seperator: /\A\s*\z/
     # the rest of desired captured groups
     rest_regexes:
-      vat: /(?:(vat))\W*[a-z]*\W*(?<vat>\d+\.\d{1,2})/i
-      shipping: /(?:(shipping))\W*[a-z]*\W*(?<shipping>\d+\.\d{1,2})/i
-      ordernumber: /(?:ordernumber\W*)(?<order_number>\d{2,20})/i
-      total_price: /(?:(\btotal|\bsum|\bprice)\W*[a-z]*\W*)(?:\beu[ro]*\W*|[\u20AC]|\$|[\u00A3])(?<price>([1-9]\d*|0)(\.\d{1,2})?)/i
+      named_cg: /\(?(?<first_digits>[0-9]{3})\)?[-. ]?(?<second_digits>[0-9]{3})[-. ]?(?<third_digits>[0-9]{4})$/
+      non_named_cg: /\(?(?:[0-9]{3})\)?[-. ]?(?:[0-9]{3})[-. ]?([0-9]{4})$/
+      one_named_cg: /\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?(?<last_digits>[0-9]{4})$/
+      none_named_cg: /\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/
+      no_cg:  /\W/
   non_fixed_structure:
     regexes:
       named_cg: /\(?(?<first_digits>[0-9]{3})\)?[-. ]?(?<second_digits>[0-9]{3})[-. ]?(?<third_digits>[0-9]{4})$/

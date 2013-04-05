@@ -40,10 +40,12 @@ module Dissect
       # better condition to determine if fixed width
 
       if input_type == "email"
-        transfer_encoding = data.parts.first.content_transfer_encoding if data.multipart?
-        Dissect.logger.info "Email body from #{data.from} is encoded with base 64 and could not be parsed"
-        raise "Email is encoded with base64 and could not be parsed" if transfer_encoding == "base64"
         if data.multipart?
+          transfer_encoding = data.parts.first.content_transfer_encoding
+          if transfer_encoding == "base64"
+            Dissect.logger.info "Email body from #{data.from} is encoded with base 64 and could not be parsed"
+            raise "Email is encoded with base64 and could not be parsed"
+          end
           mailhtml = data.body.decoded.gsub(/"/, '')
           str = Nokogiri::HTML(mailhtml).text
           str = str.gsub(/\n+|\r+|\t+/, '').squeeze("\n").strip.gsub(/\s{2,}/, ' ')
@@ -97,6 +99,10 @@ module Dissect
       @config_file_path = "config/dissect/"
     end
 
+    def set_config_dir
+      Dir.mkdir(File.join(root, set_config_paths)) unless File.exists?(File.join(root, set_config_paths))
+    end
+
     def valid_input_types
       @valid_input  = ["email", "xml", "text"]
     end
@@ -107,9 +113,9 @@ module Dissect
 
     def fixed_width_parser(op, struct, str)
       out = []
-      str = str.scan(/(?<=#{op["parsing_start"]}).*?(?=#{op["parsing_end"]})/im)[0]
-      str.split("\n").each do |line|
-        line=line.ljust(op["max_line"])
+      @str = str.scan(/(?<=#{op["parsing_start"]}).*?(?=#{op["parsing_end"]})/im)[0]
+      @str.split("\n").each do |line|
+        line=line.ljust(op["max_line"]).gsub(/\+/, ' ') #gsub for ascii art tables
         m = array_to_regexp(struct.values.map(&:to_s)).match(line).captures
         if m[0] !~ /\A\s*\z/ and m[0] !~ /\A[-*]\z/
           out << m
@@ -140,7 +146,7 @@ module Dissect
       order.each do |orderl|
         final << (Hash[*output.keys.zip(orderl).flatten])
       end
-      @output_stru = @options["multiple?"] ? Hash[@options["name"],final] : final[0]
+      @output_stru = op["multiple?"] ? Hash[op["name"],final] : final[0]
     end
 
     def unstructured_parser(reg, str)
@@ -192,56 +198,64 @@ module Dissect
       @yml_parsed = yml
     end
 
+    def valid_identifier
+      files =  Dir.glob(File.join(root, set_config_paths) + "*")
+      valid_identifiers = []
+      files.each do |fi|
+        valid_identifiers << File.basename(fi, '.*')
+      end
+      return valid_identifiers
+    end
 
     def process(data, identifier = ['default'], input_type = "email", output_type = "json")
       # puts 'data: ' + data
-      puts 'identifier: '  + identifier.join("/")
-      puts 'input_type: '  + input_type
-      puts 'output_type: ' + output_type
 
-      Dir.mkdir(File.join(root, set_config_paths)) unless File.exists?(File.join(root, set_config_paths))
+      set_config_dir
 
       if data.nil? or data == ""
         Dissect.logger.fatal { "There are no incoming data." }
         raise "Error: Could not dissect for nil or empty data"
       else
-        identifier  = identifier.last
         unless valid_input_types.include?(input_type) and valid_output_types.include?(output_type)
           raise "Wrong type of input or output parameter\nValid Types\nInput:#{valid_input_types}
           \nOutput:#{valid_output_types} "
         end
-
-
+        identifier  = identifier.last unless identifier.nil?
         # which config file to use?
-        if identifier.nil?
-          Dissect.logger.fatal { "Argument 'identifier' not given. \n
+        unless valid_identifier.include?(identifier)
+          Dissect.logger.fatal { "Argument 'identifier' not given or does not exist. \n
             Give the name of the config YML file under #{set_config_paths} directory" }
-          raise "Error: Argument identifier is nil "
+          raise "Error: Argument identifier is nil or undifined"
         else
           regex_loader identifier
         end
 
-        # config file options - regexes for structured data
-        @options = @yml_parsed["fixed_structure"]["options"]
+        puts 'identifier: '  + identifier
+        puts 'input_type: '  + input_type
+        puts 'output_type: ' + output_type
 
-        @rest_regexes  = @yml_parsed["fixed_structure"]["rest_regexes"]
-        @structure = @yml_parsed["fixed_structure"]["options"]["structure"]
+        # config file options - regexes for structured data
+        options = @yml_parsed["fixed_structure"]["options"]
+        rest_regexes  = @yml_parsed["fixed_structure"]["rest_regexes"]
+        structure = @yml_parsed["fixed_structure"]["options"]["structure"]
 
         # config file regexes for untructured data
-        @regexes = @yml_parsed["non_fixed_structure"]["regexes"]
+        regexes = @yml_parsed["non_fixed_structure"]["regexes"].empty? ? raise "No regexes found." : @yml_parsed["non_fixed_structure"]["regexes"]
 
         str = to_plaintext(data, input_type)
 
-        if @options["multiple?"] or @options["multiline?"]
-          fixed_width_parser @options, @structure, str
-          if @options["has_also_unstructured_data?"]
-            unstructured_parser @rest_regexes, str
+        if options["multiple?"] or options["multiline?"]
+          fixed_width_parser options, structure, str
+          puts "Fixed structure data dissecting started...\n\nFixed part:\n#{@str}\nChossen output fields #{structure.keys}\n "
+          if options["has_also_unstructured_data?"]
+            puts "Unstructured data dissecting started...\nSearching for #{regexes.keys}\n"
+            unstructured_parser rest_regexes, str
             @output = @output_stru.merge(@output_unstru)
           else
             @output = @output_stru
           end
         else
-          unstructured_parser @regexes, str
+          unstructured_parser regexes, str
           @output = @output_unstru
         end
 

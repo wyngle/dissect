@@ -113,12 +113,19 @@ describe Dissect do
   before :each do
     root = Dissect::root
     @path = Dissect::set_config_paths
+    @gen_path = Dissect::set_generators_paths
     @dir = File.join(root, @path)
   end
 
   describe '#set_config_paths' do
     it "should eq the right path" do
       @path == "/config/dissect"
+    end
+  end
+
+  describe '#set_generators_paths' do
+    it "should eq the right path" do
+      @gen_path == "dissect/lib/generators/dissect.yml"
     end
   end
 
@@ -182,6 +189,7 @@ describe Dissect do
 
   before(:each) do
     Dissect.stub(:set_config_paths).and_return("spec/test_files/")
+    Dissect.stub(:set_generators_paths).and_return("spec/test_files/test.yml")
     Dissect.stub(:root).and_return(File.expand_path '../..', __FILE__)
     @load = Dissect.regex_loader("test")
     @valid_i = Dissect.valid_identifier

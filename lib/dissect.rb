@@ -5,6 +5,7 @@ require 'mail'
 require 'nokogiri'
 require 'yaml'
 require 'json'
+require 'fileutils'
 
 
 class String
@@ -99,8 +100,18 @@ module Dissect
       @config_file_path = "config/dissect/"
     end
 
+    def set_generators_paths
+      @generator_file_path = "dissect/lib/generators/dissect.yml"
+    end
+
     def set_config_dir
-      Dir.mkdir(File.join(root, set_config_paths)) unless File.exists?(File.join(root, set_config_paths))
+      if File.exists?(File.join(root, set_config_paths))
+        return
+      else
+        Dir.mkdir(File.join(root, set_config_paths))
+        # FileUtils.install File.expand_path('dissect/lib/generators/dissect.yml'), File.join(root, set_config_paths), :mode => 0755, :verbose => true
+        FileUtils.cp_r File.expand_path(set_generators_paths), File.join(root, set_config_paths)
+      end
     end
 
     def valid_input_types
@@ -202,7 +213,7 @@ module Dissect
       files =  Dir.glob(File.join(root, set_config_paths) + "*")
       valid_identifiers = []
       files.each do |fi|
-        valid_identifiers << File.basename(fi, '.*')
+        valid_identifiers << File.basename(fi, '.*').downcase
       end
       return valid_identifiers
     end
@@ -216,12 +227,14 @@ module Dissect
         Dissect.logger.fatal { "There are no incoming data." }
         raise "Error: Could not dissect for nil or empty data"
       else
-        unless valid_input_types.include?(input_type) and valid_output_types.include?(output_type)
+        # Case-insensitive parameter check
+        unless valid_input_types.any?{ |s| s.casecmp(input_type)==0 } and valid_output_types.any?{ |s| s.casecmp(output_type)==0 }
           raise "Wrong type of input or output parameter\nValid Types\nInput:#{valid_input_types}
           \nOutput:#{valid_output_types} "
         end
-        identifier  = identifier.last unless identifier.nil?
+        identifier = File.basename(identifier.last.split("/").last, '.yml').downcase unless identifier.nil?
         # which config file to use?
+
         unless valid_identifier.include?(identifier)
           Dissect.logger.fatal { "Argument 'identifier' not given or does not exist. \n
             Give the name of the config YML file under #{set_config_paths} directory" }

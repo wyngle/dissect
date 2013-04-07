@@ -5,6 +5,7 @@ require 'mail'
 require 'nokogiri'
 require 'yaml'
 require 'json'
+require 'fileutils'
 
 
 class String
@@ -99,8 +100,18 @@ module Dissect
       @config_file_path = "config/dissect/"
     end
 
+    def set_generators_paths
+      @generator_file_path = "dissect/lib/generators/dissect.yml"
+    end
+
     def set_config_dir
-      Dir.mkdir(File.join(root, set_config_paths)) unless File.exists?(File.join(root, set_config_paths))
+      if File.exists?(File.join(root, set_config_paths))
+        return
+      else
+        Dir.mkdir(File.join(root, set_config_paths))
+        # FileUtils.install File.expand_path('dissect/lib/generators/dissect.yml'), File.join(root, set_config_paths), :mode => 0755, :verbose => true
+        FileUtils.cp_r File.expand_path(set_generators_paths), File.join(root, set_config_paths)
+      end
     end
 
     def valid_input_types

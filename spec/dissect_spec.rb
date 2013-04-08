@@ -98,10 +98,11 @@ describe Dissect do
 
   before :each do
     ar = ["a", "b", "c"]
-    @hash = Hash[ar.collect { |v| [v, Dissect::empty_hash(v)] }]
+    @hash = Hash[ar.collect { |v| [v, Dissect::EmptyHash.new(v)] }]
   end
 
-  describe '#empty_hash' do
+  describe Dissect::EmptyHash do
+  # describe '#empty_hash' do
     it "returns an empty hash" do
       @hash.should be_an_instance_of(Hash)
       @hash == {"a"=>"", "b"=>"", "c"=>""}
@@ -129,27 +130,27 @@ describe Dissect do
     end
   end
 
-  describe '#set_config_dir' do
-    it "must create the config directory" do
-      Pathname(@dir).should exist
-    end
-  end
+  # describe '#set_config_dir' do
+  #   it "must create the config directory" do
+  #     Pathname(@dir).should exist
+  #   end
+  # end
 
 # ##############################################################################
 
   before :each do
     yml = YAML.load_file(File.expand_path("spec/test_files/test.yml"))
-    regexes = yml["non_fixed_structure"]["regexes"]
+    regexes = yml["unstructured"]["regexes"]
     @str     = "phone number: 111-123-4567"
     @str2    = "startt  1  AA00000     Superwow Item1 - version4          EUR 113.34
           ???O 113.34\n                 Edition\n  1  AA000000000 Superwow Item2
                            EUR 41.01       ???O 41.01\n     11           endd
             phone number: 111-123-4567"
-    options = yml["fixed_structure"]["options"]
+    options = yml["structured"]["options"]
     @structure = options["structure"]
 
     @output = Dissect.unstructured_parser(regexes, @str)
-    @output2 = Dissect.fixed_width_parser(options, @structure, @str2)
+    @output2 = Dissect.structured_parser(options, @structure, @str2)
     @result_json  = Dissect.result(@output, "json")
     @result_json2  = Dissect.result(@output2, "json")
     @result_xml   = Dissect.result(@output, "xml")
@@ -167,7 +168,7 @@ describe Dissect do
     end
   end
 
-  describe '#fixed_width_parser' do
+  describe '#structured_parser' do
     it "should return a hash with matches" do
       @output2.should be_an_instance_of(Hash)
     end

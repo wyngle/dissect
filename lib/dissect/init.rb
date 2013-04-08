@@ -2,7 +2,12 @@ require 'logger'
 
 module Dissect
   def self.root
-    File.expand_path '../..', __FILE__
+    # defined?(Rails) ? Rails.root : File.expand_path './'
+    File.expand_path './'
+  end
+
+  def self.env
+    @env ||= defined?(Rails) ? Rails.env : ENV['RACK_ENV'] || 'development'
   end
 
   def self.logger

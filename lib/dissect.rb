@@ -7,15 +7,10 @@ require 'yaml'
 require 'json'
 require 'fileutils'
 
+require "dissect/empty_hash.rb"
+require "dissect/scan2.rb"
 
-class String
-  def scan2(regexp)
-    names = regexp.names
-    scan(regexp).collect do |match|
-      Hash[names.zip(match)]
-    end
-  end
-end
+
 
 module Dissect
 
@@ -23,17 +18,9 @@ module Dissect
 
   class << self
 
-    def env
-      @env ||= defined?(Rails) ? Rails.env : ENV['RACK_ENV'] || 'development'
-    end
-
-    def root
-      File.expand_path '../../..', __FILE__
-    end
-
-    def empty_hash(values)
-      ""
-    end
+    # def empty_hash(values)
+    #   ""
+    # end
 
     def to_plaintext(data, input_type)
 
@@ -100,6 +87,9 @@ module Dissect
       @config_file_path = "config/dissect/"
     end
 
+    def kostis
+      @mpla = File.join(root, set_config_paths)
+    end
     def set_generators_paths
       @generator_file_path = "dissect/lib/generators/dissect.yml"
     end
@@ -122,49 +112,57 @@ module Dissect
       @valid_output = ["json", "xml"]
     end
 
-    def fixed_width_parser(op, struct, str)
+    def structured_parser(op, struct, str)
       out = []
-      @str = str.scan(/(?<=#{op["parsing_start"]}).*?(?=#{op["parsing_end"]})/im)[0]
-      @str.split("\n").each do |line|
-        line=line.ljust(op["max_line"]).gsub(/\+/, ' ') #gsub for ascii art tables
-        m = array_to_regexp(struct.values.map(&:to_s)).match(line).captures
-        if m[0] !~ /\A\s*\z/ and m[0] !~ /\A[-*]\z/
-          out << m
-        else
-          m.each_with_index do |x,i|
-            next unless x !~ /\A\s*\z/
-            out.last[i].rstrip
-            out.last[i] += x.lstrip
+      if str=~/(?<=#{op["parsing_start"]}).*?(?=#{op["parsing_end"]})/im
+        @str = str.scan(/(?<=#{op["parsing_start"]}).*?(?=#{op["parsing_end"]})/im)[0]
+        @str.split("\n").each do |line|
+          line=line.ljust(op["max_line"]).gsub(/\+/, ' ') #gsub for ascii art tables
+          m = array_to_regexp(struct.values.map(&:to_s)).match(line).captures
+          if m[0] !~ /\A\s*\z/ and m[0] !~ /\A[-*]\z/
+            out << m
+          else
+            m.each_with_index do |x,i|
+              next unless x !~ /\A\s*\z/
+              out.last[i].rstrip
+              out.last[i] += x.lstrip
+            end
           end
         end
-      end
 
-      orderline = []
-      out.each do |o|
-       o.each_with_index do |i,idx|
-         order = i.strip.squeeze(' ')
-         orderline << order
-         @orderline = orderline
-         # print ', ' unless idx == o.size - 1
-       end
-      end
+        orderline = []
+        out.each do |o|
+         o.each_with_index do |i,idx|
+           order = i.strip.squeeze(' ')
+           orderline << order
+           @orderline = orderline
+           # print ', ' unless idx == o.size - 1
+         end
+        end
 
-      keys_arr = struct.keys
-      output = Hash[keys_arr.collect { |v| [v, empty_hash(v)] }]
-      order = @orderline.each_slice(struct.values.size).to_a
+        keys_arr = struct.keys
+        output = Hash[keys_arr.collect { |v| [v, Dissect::EmptyHash.new(v)] }]
+        order = @orderline.each_slice(struct.values.size).to_a
 
-      final = []
-      order.each do |orderl|
-        final << (Hash[*output.keys.zip(orderl).flatten])
+        final = []
+        order.each do |orderl|
+          final << (Hash[*output.keys.zip(orderl).flatten])
+        end
+        if final.map(&:values).flatten.empty?
+          @output_stru = {:error=>"No matches"}
+        else
+          @output_stru = op["multiple?"] ? Hash[op["name"],final] : final[0]
+        end
+      else
+        raise "unable to find specified structure data. Check the options in your yml config file "
       end
-      @output_stru = op["multiple?"] ? Hash[op["name"],final] : final[0]
     end
 
     def unstructured_parser(reg, str)
 
       # create the hash output
       keys_arr = reg.keys
-      output = Hash[keys_arr.collect { |v| [v, empty_hash(v)] }]
+      output = Hash[keys_arr.collect { |v| [v, Dissect::EmptyHash.new(v)] }]
 
       # take the regexes from yaml
       # accept all types of regexes -> non-capturing groups - named capturing groups - no groups
@@ -185,7 +183,8 @@ module Dissect
         end
         output[name] = match
       end
-      @output_unstru = output
+      # @output_unstru = output
+      @output_unstru = output.values.reject(&:empty?).empty? ? {:error=>"No matches"} : output
     end
 
     def result(hash, output_type)
@@ -223,18 +222,20 @@ module Dissect
 
       set_config_dir
 
-      if data.nil? or data == ""
+      if data.blank?
         Dissect.logger.fatal { "There are no incoming data." }
         raise "Error: Could not dissect for nil or empty data"
       else
+
         # Case-insensitive parameter check
         unless valid_input_types.any?{ |s| s.casecmp(input_type)==0 } and valid_output_types.any?{ |s| s.casecmp(output_type)==0 }
           raise "Wrong type of input or output parameter\nValid Types\nInput:#{valid_input_types}
           \nOutput:#{valid_output_types} "
         end
-        identifier = File.basename(identifier.last.split("/").last, '.yml').downcase unless identifier.nil?
-        # which config file to use?
 
+        identifier = File.basename(identifier.last.split("/").last, '.yml').downcase unless identifier.nil?
+
+        # which config file to use?
         unless valid_identifier.include?(identifier)
           Dissect.logger.fatal { "Argument 'identifier' not given or does not exist. \n
             Give the name of the config YML file under #{set_config_paths} directory" }
@@ -243,37 +244,39 @@ module Dissect
           regex_loader identifier
         end
 
-        puts 'identifier: '  + identifier
-        puts 'input_type: '  + input_type
-        puts 'output_type: ' + output_type
+        # puts 'identifier: '  + identifier
+        # puts 'input_type: '  + input_type
+        # puts 'output_type: ' + output_type
+
+        general_options = @yml_parsed["general_options"]["data_classification"]
 
         # config file options - regexes for structured data
-        options = @yml_parsed["fixed_structure"]["options"]
-        rest_regexes  = @yml_parsed["fixed_structure"]["rest_regexes"]
-        structure = @yml_parsed["fixed_structure"]["options"]["structure"]
+        options = @yml_parsed["structured"]["options"]
+        structured_regexes  = @yml_parsed["structured"]["regexes"]
+        structure = @yml_parsed["structured"]["options"]["structure"]
 
         # config file regexes for untructured data
-        if @yml_parsed["non_fixed_structure"]["regexes"].empty?
+        if @yml_parsed["unstructured"]["regexes"].empty?
           raise "No regexes found."
         else
-          regexes = @yml_parsed["non_fixed_structure"]["regexes"]
+          unstructured_regexes = @yml_parsed["unstructured"]["regexes"]
         end
-        # regexes = @yml_parsed["non_fixed_structure"]["regexes"].empty? ? raise "No regexes found." : @yml_parsed["non_fixed_structure"]["regexes"]
+        # regexes = @yml_parsed["unstructured"]["regexes"].empty? ? raise "No regexes found." : @yml_parsed["unstructured"]["regexes"]
 
         str = to_plaintext(data, input_type)
 
-        if options["multiple?"] or options["multiline?"]
-          fixed_width_parser options, structure, str
-          puts "Fixed structure data dissecting started...\n\nFixed part:\n#{@str}\nChossen output fields #{structure.keys}\n "
+        if general_options == "structured"
+          structured_parser options, structure, str
+          # puts "Fixed structure data dissecting started...\n\nFixed part:\n#{@str}\nChossen output fields #{structure.keys}\n "
           if options["has_also_unstructured_data?"]
-            puts "Unstructured data dissecting started...\nSearching for #{regexes.keys}\n"
-            unstructured_parser rest_regexes, str
+            # puts "Unstructured data dissecting started...\nSearching for #{structured_regexes.keys}\n"
+            unstructured_parser structured_regexes, str
             @output = @output_stru.merge(@output_unstru)
           else
             @output = @output_stru
           end
         else
-          unstructured_parser regexes, str
+          unstructured_parser structured_regexes, str
           @output = @output_unstru
         end
 

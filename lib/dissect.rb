@@ -4,6 +4,7 @@ require "dissect/init"
 require 'mail'
 require 'nokogiri'
 require 'yaml'
+require 'psych'
 require 'json'
 require 'fileutils'
 
@@ -91,14 +92,15 @@ module Dissect
       @mpla = File.join(root, set_config_paths)
     end
     def set_generators_paths
-      @generator_file_path = "dissect/lib/generators/dissect.yml"
+      @generator_file_path = "dissect/lib/generators/config/dissect.yml"
     end
 
     def set_config_dir
       if File.exists?(File.join(root, set_config_paths))
         return
       else
-        Dir.mkdir(File.join(root, set_config_paths))
+        # Dir.mkdir(File.join(root, set_config_paths))
+        FileUtils.mkpath File.join(root, set_config_paths)
         # FileUtils.install File.expand_path('dissect/lib/generators/dissect.yml'), File.join(root, set_config_paths), :mode => 0755, :verbose => true
         FileUtils.cp_r File.expand_path(set_generators_paths), File.join(root, set_config_paths)
       end
@@ -276,7 +278,7 @@ module Dissect
             @output = @output_stru
           end
         else
-          unstructured_parser structured_regexes, str
+          unstructured_parser unstructured_regexes, str
           @output = @output_unstru
         end
 

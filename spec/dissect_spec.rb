@@ -22,6 +22,8 @@ end
 describe Dissect do
 
   before :each do
+    yml = YAML.load_file(File.expand_path("spec/test_files/test.yml"))
+    general_options = yml["general_options"]["data_classification"]
     # no multipart text email
     mailtext = Mail.read File.expand_path("spec/test_files/text.eml")
     # multipart - html
@@ -112,6 +114,7 @@ describe Dissect do
 # ##############################################################################
 
   before :each do
+    # ENV.stub(:[]).with("DISSECT_ROOT").and_return("/home/rp0/thegem")
     root = Dissect::root
     @path = Dissect::set_config_paths
     @gen_path = Dissect::set_generators_paths
@@ -195,7 +198,7 @@ describe Dissect do
     @load = Dissect.regex_loader("test")
     @valid_i = Dissect.valid_identifier
 
-
+    @empty_data = ""
     @final1 = Dissect.process(@str, ["test_un"], "text", "json")
     @final2 = Dissect.process(@str2, ["test"], "text", "json")
   end
@@ -203,14 +206,6 @@ describe Dissect do
   describe '#process' do
     it "should raise ArgumentError" do
       expect{ Dissect.process.validate_arguments(nil) }.to raise_error(ArgumentError)
-    end
-
-    it "should raise ArgumentError" do
-      expect{ Dissect.process.(nil, "kati") }.to raise_error
-    end
-
-    it "should raise ArgumentError" do
-      expect{ Dissect.process.("kati", nil) }.to raise_error
     end
 
     # it "should have correct arguments" do
@@ -237,6 +232,13 @@ describe Dissect do
       @final2 == @output2
     end
   end
+
+  describe '#process' do
+    it "should raise error for nill data" do
+      expect{ Dissect.process(@empty_data, ["test"], text) }.to raise_error
+    end
+  end
+
 
   # describe '#process' do
   #   # process.should_receive(:identifier).with(instance_of(Array) )

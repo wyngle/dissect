@@ -4,12 +4,13 @@ require "dissect/init"
 require 'mail'
 require 'nokogiri'
 require 'yaml'
-require 'psych'
+# YAML::ENGINE.yamler = "syck"
 require 'json'
 require 'fileutils'
 
 require "dissect/empty_hash.rb"
 require "dissect/scan2.rb"
+require "dissect/errors.rb"
 
 
 
@@ -19,28 +20,33 @@ module Dissect
 
   class << self
 
-    # def empty_hash(values)
-    #   ""
-    # end
-
     def to_plaintext(data, input_type)
 
       # TODO
       # better condition to determine if fixed width
+      # we dont want to squeeze if structured data
+      #
 
       if input_type == "email"
+
         if data.multipart?
           transfer_encoding = data.parts.first.content_transfer_encoding
           if transfer_encoding == "base64"
-            Dissect.logger.info "Email body from #{data.from} is encoded with base 64 and could not be parsed"
-            raise "Email is encoded with base64 and could not be parsed"
+            er = Error::Encoded.new
+            Dissect.logger.info er
+            raise er
           end
-          mailhtml = data.body.decoded.gsub(/"/, '')
-          str = Nokogiri::HTML(mailhtml).text
-          str = str.gsub(/\n+|\r+|\t+/, '').squeeze("\n").strip.gsub(/\s{2,}/, ' ')
+          # if general_options == "unstructured"
+            mailhtml = data.body.decoded.gsub(/"/, '')
+            str = Nokogiri::HTML(mailhtml).text
+            str = str.gsub(/\n+|\r+|\t+/, '').squeeze("\n").strip.gsub(/\s{2,}/, ' ')
+          # else
+            # str = data.body.decoded.gsub(/"/, '')
+          # end
         else
           str = data.body.decoded.gsub(/"/, '')
         end
+
       elsif input_type == "xml"
         str = Nokogiri::XML(mailhtml).text
       else
@@ -73,6 +79,7 @@ module Dissect
     end
 
     # creates the regexp from the fixed width array given in the config file
+    #
     def array_to_regexp(arr)
       arr = arr.map { |x| "(.{" + x + "}?) " }
       arr.push('/').unshift('/')
@@ -88,9 +95,6 @@ module Dissect
       @config_file_path = "config/dissect/"
     end
 
-    def kostis
-      @mpla = File.join(root, set_config_paths)
-    end
     def set_generators_paths
       @generator_file_path = "dissect/lib/generators/config/dissect.yml"
     end
@@ -99,9 +103,7 @@ module Dissect
       if File.exists?(File.join(root, set_config_paths))
         return
       else
-        # Dir.mkdir(File.join(root, set_config_paths))
         FileUtils.mkpath File.join(root, set_config_paths)
-        # FileUtils.install File.expand_path('dissect/lib/generators/dissect.yml'), File.join(root, set_config_paths), :mode => 0755, :verbose => true
         FileUtils.cp_r File.expand_path(set_generators_paths), File.join(root, set_config_paths)
       end
     end
@@ -156,7 +158,9 @@ module Dissect
           @output_stru = op["multiple?"] ? Hash[op["name"],final] : final[0]
         end
       else
-        raise "unable to find specified structure data. Check the options in your yml config file "
+        er = Error::StructureDataEr.new
+        Dissect.logger.fatal er
+        raise er
       end
     end
 
@@ -185,7 +189,6 @@ module Dissect
         end
         output[name] = match
       end
-      # @output_unstru = output
       @output_unstru = output.values.reject(&:empty?).empty? ? {:error=>"No matches"} : output
     end
 
@@ -196,16 +199,19 @@ module Dissect
         @analyzed = hash.to_json
         # @analyzed = JSON.pretty_generate(hash)
         # jj hash
+        raise NoMatches::new if @analyzed.length <= 2
       end
     end
 
     def regex_loader(identifier)
       begin
-        yml = YAML.load_file(File.join(root, set_config_paths, "#{identifier}.yml"))
-        Dissect.logger.info "Using #{identifier}.yml config file."
+        ident_file = File.join(root, set_config_paths, "#{identifier}.yml")
+        Dissect.logger.info("Dissecting with: " + ident_file)
+        yml = YAML.load_file(ident_file)
       rescue => err
-        puts "Exception: #{err}"
         Dissect.logger.fatal "Exception: #{err.backtrace}"
+        Dissect.logger.fatal "Exception: #{err.message}"
+        return { "Error loading file"=> "#{err.message}"}.to_json
       end
       @yml_parsed = yml
     end
@@ -220,28 +226,29 @@ module Dissect
     end
 
     def process(data, identifier = ['default'], input_type = "email", output_type = "json")
-      # puts 'data: ' + data
 
       set_config_dir
 
       if data.blank?
-        Dissect.logger.fatal { "There are no incoming data." }
-        raise "Error: Could not dissect for nil or empty data"
+        er = Error::NoData.new
+        Dissect.logger.fatal er
+        raise er
       else
 
         # Case-insensitive parameter check
         unless valid_input_types.any?{ |s| s.casecmp(input_type)==0 } and valid_output_types.any?{ |s| s.casecmp(output_type)==0 }
-          raise "Wrong type of input or output parameter\nValid Types\nInput:#{valid_input_types}
-          \nOutput:#{valid_output_types} "
+          er = Error::ConfigFileError.new "not valid input or output argument"
+          Dissect.logger.fatal "#{er}\nValid Types\nInput:#{valid_input_types}\nOutput:#{valid_output_types}"
+          raise er
         end
 
         identifier = File.basename(identifier.last.split("/").last, '.yml').downcase unless identifier.nil?
 
         # which config file to use?
         unless valid_identifier.include?(identifier)
-          Dissect.logger.fatal { "Argument 'identifier' not given or does not exist. \n
-            Give the name of the config YML file under #{set_config_paths} directory" }
-          raise "Error: Argument identifier is nil or undifined"
+          er = Error::ConfigFileError.new "can't parse for nil identifier"
+          Dissect.logger.fatal "#{er}\n valid identifiers at #{set_config_paths}"
+          raise er
         else
           regex_loader identifier
         end
@@ -258,20 +265,20 @@ module Dissect
         structure = @yml_parsed["structured"]["options"]["structure"]
 
         # config file regexes for untructured data
-        if @yml_parsed["unstructured"]["regexes"].empty?
-          raise "No regexes found."
+        if @yml_parsed["unstructured"]["regexes"].nil?
+          # raise "No regexes found. Check your config file '#{identifier}.yml'"
+          er = Error::ConfigFileError.new "No regexes found. Check your config file '#{identifier}.yml'"
+          Dissect.logger.info er
+          raise er
         else
           unstructured_regexes = @yml_parsed["unstructured"]["regexes"]
         end
-        # regexes = @yml_parsed["unstructured"]["regexes"].empty? ? raise "No regexes found." : @yml_parsed["unstructured"]["regexes"]
 
         str = to_plaintext(data, input_type)
 
         if general_options == "structured"
           structured_parser options, structure, str
-          # puts "Fixed structure data dissecting started...\n\nFixed part:\n#{@str}\nChossen output fields #{structure.keys}\n "
           if options["has_also_unstructured_data?"]
-            # puts "Unstructured data dissecting started...\nSearching for #{structured_regexes.keys}\n"
             unstructured_parser structured_regexes, str
             @output = @output_stru.merge(@output_unstru)
           else

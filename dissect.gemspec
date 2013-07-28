@@ -23,7 +23,7 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency 'sinatra', '= 1.0'
   gem.add_runtime_dependency 'sinatra-respond_to', '= 0.5.0'
-  gem.add_runtime_dependency 'mail', '= 2.5.3'
+  gem.add_runtime_dependency 'mail', '= 2.5.4'
   gem.add_runtime_dependency 'nokogiri'
   gem.add_runtime_dependency 'json'
   gem.add_runtime_dependency 'thor'

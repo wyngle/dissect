@@ -21,14 +21,16 @@ Gem::Specification.new do |gem|
   ]
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
 
-  gem.add_runtime_dependency 'sinatra', '= 1.0'
-  gem.add_runtime_dependency 'sinatra-respond_to', '= 0.5.0'
-  gem.add_runtime_dependency 'mail', '= 2.5.4'
+  gem.add_runtime_dependency 'sinatra'
+  gem.add_runtime_dependency 'sinatra-respond_to'
+  gem.add_runtime_dependency 'mail', '= 2.5.5'
   gem.add_runtime_dependency 'nokogiri'
   gem.add_runtime_dependency 'json'
   gem.add_runtime_dependency 'thor'
 
   gem.add_development_dependency "rspec"
+  gem.add_development_dependency "rack"
+  gem.add_development_dependency "rack-test"
 
   gem.require_paths = ["lib"]
 end

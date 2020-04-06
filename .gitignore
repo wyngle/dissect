@@ -17,3 +17,6 @@ coverage
 Icon?
 ehthumbs.db
 Thumbs.db
+
+.byebug_history
+/test/*

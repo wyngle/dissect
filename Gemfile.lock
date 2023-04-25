@@ -22,7 +22,7 @@ GEM
     mini_portile2 (2.8.1)
     mustermann (3.0.0)
       ruby2_keywords (~> 0.0.1)
-    nokogiri (1.14.0)
+    nokogiri (1.14.3)
       mini_portile2 (~> 2.8.0)
       racc (~> 1.4)
     polyglot (0.3.5)

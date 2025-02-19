@@ -5,3 +5,4 @@ gemspec
 
 gem 'rake'
 gem 'simplecov', :require => false, :group => :test
+gem 'nokogiri'

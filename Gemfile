@@ -5,4 +5,4 @@ gemspec
 
 gem 'rake'
 gem 'simplecov', :require => false, :group => :test
-gem "nokogiri", ">= 1.18.3"
+gem "nokogiri"

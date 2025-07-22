@@ -36,6 +36,7 @@ module Dissect
       end
     end
 
+# ===================== index_page ===================================
 
     get '/_dissect' do
       @root = Dissect.root
@@ -66,7 +67,8 @@ module Dissect
       end
     end
 
-    # save updated yml
+# ================== save updated yml ================================
+
     post '/save' do
       @kati = parmas["saveit"]
       #   @test = params["newyml"]
@@ -87,7 +89,8 @@ module Dissect
       # @str_mail = Dissect.to_plaintext(@email, "email")
     end
 
-    # regex tester
+# ==================== regex tester ==================================
+
     post '/_dissect/regex' do
       if !request.params["regex"].empty?
         # pattern = Regexp.new(params[:regex])
@@ -116,7 +119,8 @@ module Dissect
       end
     end
 
-    #test dissect
+# ==================== test dissect ==================================
+
     get '/_dissect/testme' do
       @root = Dissect::root
       # @identifier =  Dir.glob(File.join(@root, "config/dissect/*"))
@@ -159,6 +163,34 @@ module Dissect
         end
       end
     end
+
+# ==================== create yml files ==============================
+
+    get '/_dissect/new' do
+      respond_to do |format|
+        format.html do
+          erb :'new'
+        end
+      end
+    end
+
+    post '/_dissect/new' do
+      root = Dissect::root
+      identifier = params[:identifier]
+      options = params[:new].values
+      names = params[:names].values
+      # @dir = File.join(@root, "/config/dissect/kostis.yml")
+      regulars = params[:regulars].values.each_with_index.map { |reg, idx| '/' + reg + '/' + options[idx]   }
+      ar_to_hash = Hash[names.zip regulars]
+      @newyml = Hash[identifier => ar_to_hash]
+      File.open(File.join(root, "/config/dissect/#{identifier}.yml"), "w") {|f| f.write(@newyml.to_yaml) }
+      respond_to do |format|
+        format.html do
+          erb :'new'
+        end
+      end
+    end
+
 
   end
 end

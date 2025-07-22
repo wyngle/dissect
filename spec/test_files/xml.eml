@@ -1,0 +1,30 @@
+From: John Doe <example@example.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+        boundary="XXXXboundary text"
+
+This is a multipart message in MIME format.
+
+--XXXXboundary text 
+Content-Type: text/xml;
+	charset="utf-8"
+Content-Transfer-Encoding: 8bit
+
+</body>
+</message>
+<message>
+<header>
+<from>webmaster@test.com</from>
+<to>webmaster@goodsite.com</to>
+<subject>An excellent site</subject>
+</header>
+<body>
+
+--XXXXboundary text 
+Content-Type: text/plain;
+Content-Disposition: attachment;
+        filename="test.txt"
+
+this is the attachment text
+
+--XXXXboundary text--

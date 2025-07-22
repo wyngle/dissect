@@ -1,10 +1,10 @@
 X-Account-Key: account1
-X-UIDL: GmailId13b841c44f5f4066
+X-UIDL:
 X-Mozilla-Status: 0001
 X-Mozilla-Status2: 00000000
-X-Mozilla-Keys:                                                                                 
-Delivered-To: kostas89@gmail.com
-Received: by 10.76.12.199 with SMTP id a7csp256199oac;
+X-Mozilla-Keys:
+Delivered-To:
+Received: by
         Mon, 10 Dec 2012 01:19:04 -0800 (PST)
 Received: by 10.66.84.40 with SMTP id v8mr34450552pay.47.1355131143333;
         Mon, 10 Dec 2012 01:19:03 -0800 (PST)
@@ -14,9 +14,9 @@ Received: from mta4.email.play.com (mta4.email.play.com. [68.232.205.86])
         Mon, 10 Dec 2012 01:19:03 -0800 (PST)
 Received-SPF: pass (google.com: domain of bounce-20_HTML-17932146-20778-1059204-147240@bounce.email.play.com designates 68.232.205.86 as permitted sender) client-ip=68.232.205.86;
 Authentication-Results: mx.google.com; spf=pass (google.com: domain of bounce-20_HTML-17932146-20778-1059204-147240@bounce.email.play.com designates 68.232.205.86 as permitted sender) smtp.mail=bounce-20_HTML-17932146-20778-1059204-147240@bounce.email.play.com
-Received: by mta4.email.play.com id homkge163hss for <kostas89@gmail.com>; Mon, 10 Dec 2012 03:19:02 -0600 (envelope-from <bounce-20_HTML-17932146-20778-1059204-147240@bounce.email.play.com>)
+Received: by mta4.email.play.com id homkge163hss for <">; Mon, 10 Dec 2012 03:19:02 -0600 (envelope-from <bounce-20_HTML-17932146-20778-1059204-147240@bounce.email.play.com>)
 From: "Play.com Dispatch Confirmation" <orders@play.com>
-To: <kostas89@gmail.com>
+To: <">
 Subject: Your order has been posted
 Date: Mon, 10 Dec 2012 03:19:02 -0600
 MIME-Version: 1.0
@@ -47,7 +47,7 @@ Content-Transfer-Encoding: 8bit
 .ExternalClass, .ExternalClass p, .ExternalClass span, .ExternalClass font, .ExternalClass td, .ExternalClass div {
 	line-height: 100%;
 }
-	
+
 body {
 	-webkit-text-size-adjust:none;
 	-ms-text-size-adjust:none;
@@ -87,10 +87,10 @@ body, #body_style {
     <center>
   <font Size="1" Color="#000000"> To view this email as a web page, click <a href="http://click.email.play.com/?qs=cce40748d9a19e536be44ac9abd8d88aa33ac4c77567425e01271f349547799ae028ca2a64b0e2b3">here.</a></font>
 </center>
-    
-    
+
+
     <!--BEGIN: HEADER-->
-      
+
 <table cellpadding="0" cellspacing="0" align="center" width="590" border="0" bgcolor="#f5f5f5">
         <tr>
           <td width="280"><a href="http://click.email.play.com/?qs=cce40748d9a19e534a37e156ff48262e87c47634acb02af6e9a275105e202460598deb73194db0ec" title="Play.com" target ="_blank"><img src="http://images.play.com/newimages/Newsletter/header_img_3/Play_Logo.jpg" width="280" alt="Play.com" border="0" style="display:block;" /></a>
@@ -107,11 +107,11 @@ body, #body_style {
           </td>
         </tr>
 </table>
-      
-      <!--END: HEADER--> 
-      
+
+      <!--END: HEADER-->
+
       <!--BEGIN: NAVIGATION-->
-      
+
       <table align="center" width="590" bgcolor="#686868">
         <tr height="30" style="font-family: Arial,  sans-serif; color:#ffffff; font-size: 9px; font-weight: bold">
           <td align="center" style="color: #ffffff; background-color:#686868; border-right: #333333 1px solid"><a href="http://click.email.play.com/?qs=cce40748d9a19e5310feb4c87b93910eb8389c8a03b502c02cdcfbeac79a52f770d4f18f02cb8405" name="DVD" title="DVD" style="padding-left: 1px; color: #ffffff; font-size: 9px; font-weight: bold; text-decoration: none" target ="_blank">DVD</a></td>
@@ -132,23 +132,23 @@ body, #body_style {
           <td align="center" style="color:#ffffff;  background-color:#686868;"><a href="http://click.email.play.com/?qs=83bff0632b5a4578d9ee902b03d06f60bb3f1d2e54fc24e40a35a62e7bcb25e079053e2a3314c294" name="Toys & Baby" title="Toys & Baby" style="padding-left: 1px; color: #ffffff; font-size: 9px; font-weight: bold; text-decoration: none">Toys <br />&amp; Baby</a></td>
         </tr>
       </table>
-      
+
       <!--END: NAVIGATION-->
 
-      
-	
+
+
       <table align="center" border="0" cellpadding="0" cellspacing="0" width="590" >
         <tr>
           <td width="590" valign="top">
-          
-         <!--BEGIN: NEWSLETTER CONTENT--> 
-         
-         
+
+         <!--BEGIN: NEWSLETTER CONTENT-->
+
+
 
 <table cellspacing="5" cellpadding="5" width="590" style="max-width:590px; width:590px;" align="center">
         <tr>
         <td width="590" >
-        
+
         <div width="560" style="text-align:center;">
         <div width="560" style="margin: 0,auto;text-align:left;width:560px;">
 <pre width="580" style="
@@ -159,7 +159,7 @@ white-space: pre-wrap;
 word-wrap: break-word;
 font-family: Arial, Helvetica, sans-serif;
 align:center;
-width:580px;">To: Kostas Karampinas(kostas89@gmail.com)
+width:580px;">To: (")
 
 Your order for Trespass Men's Tron 1/2 Zip Fleece Top (Red) (Large) has been posted.
 
@@ -167,13 +167,8 @@ Please note PLAY.COM will show on your statement.
 
 Please check the following order information:
 
-Delivery Address: 
-Kostas Karampinas
-Papadopoulou 3
-Ampelokipoi
-Athens
-Greece
-11521
+Delivery Address:
+
 
 Delivery Option: Standard Delivery - Please allow 3-5 working days for delivery
 
@@ -210,34 +205,34 @@ By receiving this email from play.com you are accepting our terms and conditions
       </td>
         </tr>
       </table>
-     
-      
-      
-      
-      
-     
+
+
+
+
+
+
         <table align="center" border="0" cellpadding="0" cellspacing="0" width="590" bgcolor="#f5f5f5">
-   
+
         <tr>
           <td><img src="http://images.play.com/newimages/Newsletter/270212_DVDInterest_img/270212_DVDinterestV2_r8_c1.jpg" width="590" height="25"  border="0" /></td>
         </tr>
       </table>
-      
+
       <!--BEGIN: BANNER-->
       <table align="center" border="0" cellpadding="0" cellspacing="0" width="530" bgcolor="#f5f5f5">
-   
+
         <tr>
           <td align="center"><a href="http://click.email.play.com/?qs=83bff0632b5a45780ea69bd2164b60f6643266f145970d2946aec6d6033a5327d66c0f8022daa62b" target="_blank"><img style="display:block" src="http://images.play.com/newimages/Newsletter/banners/WK48-Merchant-Stores-v1.jpg"  border="0" alt="Rakuten Marketplace - Meet our Merchants" /></a></td>
         </tr>
       </table>
       <!--END: BANNER-->
-      
-        
 
-      
-      
+
+
+
+
       <!--BEGIN: FOOTER-->
-      
+
 <table width="590" border="0" cellpadding="0" cellspacing="0" align="center">
   <tr>
       <td width="23">
@@ -294,17 +289,17 @@ By receiving this email from play.com you are accepting our terms and conditions
     <td width="24">&nbsp;</td>
   </tr>
 </table>
-      
-      <!--END: FOOTER--> 
-      
+
+      <!--END: FOOTER-->
+
       <!--BEGIN: LEGALS-->
 
-      
+
       <center>
-        <p style="margin-top:10px; line-height: 13px;"> <font size="1" color="#686868" face="Arial,  sans-serif" style="font-size:9px; line-height:12px;"> 
+        <p style="margin-top:10px; line-height: 13px;"> <font size="1" color="#686868" face="Arial,  sans-serif" style="font-size:9px; line-height:12px;">
           All products subject to availability. Play.com reserve the right to change prices.<br />
           Check website for latest availability and pricing. <br />
-          
+
           <br />
           <a style="alignment-adjust:central" href="http://click.email.play.com/?qs=83bff0632b5a457851af7845632e97a31862fca8827e20c7397bc37e5ce338524dde9b84ef8b388e"> <img align="middle" src="http://images.play.com/newimages/Newsletter/2011/Generic/New-logo.gif" width="118" height="50" border="0" alt="Play.com" /></a><br />
           <br />
@@ -312,7 +307,7 @@ By receiving this email from play.com you are accepting our terms and conditions
           &copy; Play.com 2012</font><br />
         </p>
       </center>
-      
+
       <!--END: LEGALS--></td>
   </tr>
 </table>

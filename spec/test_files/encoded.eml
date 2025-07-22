@@ -1,0 +1,42 @@
+X-Account-Key: account1
+X-UIDL: GmailId13ca1aa213c5da7a
+X-Mozilla-Status: 0001
+X-Mozilla-Status2: 00000000
+X-Mozilla-Keys:                                                                                 
+Delivered-To: test@test.com
+Received: by test with SMTP id gd1csp20995obb;
+        Sun, 3 Feb 2013 12:05:47 -0800 (PST)
+X-Received: by 10.180.73.80 with SMTP id j16mr51138wiv.5.1351test947023;
+        Sun, 03 Feb 2013 12:05:47 -0800 (PST)
+Return-Path: <do_not_reply@testing.com>
+Received: from testing.com ([88.208.228.233])
+        by mx.google.com with ESMTP id bj4si2796555wib.63.2013.02.03.12.05.46;
+        Sun, 03 Feb 2013 12:05:46 -0800 (PST)
+Received-SPF: neutral (google.com: is neither permitted nor denied by best guess record for domain of do_not_reply@testing.com);
+Authentication-Results: mx.google.com;
+       spf=neutral (google.com:  is neither permitted nor denied by best guess record for domain of do_not_reply@testing.com) smtp.mail=do_not_reply@testing.com
+Received: from DSVR013647 ([127.0.0.1]) by testing.com with Microsoft SMTPSVC(7.0.6001.18485);
+	 Sun, 3 Feb 2013 20:03:29 +0000
+MIME-Version: 1.0
+From: "Test company"
+ <do_not_reply@testing.com>
+To: test@test.com
+Date: 3 Feb 2013 20:03:29 +0000
+Subject: yeah
+Content-Type: multipart/mixed;
+ boundary=--boundary_136_f4f3fcb1-d649-40e8-bea8-f9167eb18c7b
+Return-Path: do_not_reply@testing.com
+Message-ID: <DSVR01364767JnIEfw200001a80@testing.com>
+X-OriginalArrivalTime: 03 Feb 2013 20:03:29.0453 (UTC) FILETIME=[88FDDDD0:01CE0249]
+
+
+----boundary_136_f4f3fcb1-d649-40e8-bea8-f9167eb18c7b
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: base64
+
+PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDQuMDEgVHJh
+bnNpdGlvbmFsLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL1RSL2h0bWw0L2xvb3Nl
+----boundary_136_f4f3fcb1-d649-40e8-bea8-f9167eb18c7b--
+
+
+

@@ -1,0 +1,116 @@
+From: John Doe <example@example.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+        boundary="XXXXboundary text"
+
+This is a multipart message in MIME format.
+
+--XXXXboundary text 
+Content-Type: text/html;
+	charset="utf-8"
+Content-Transfer-Encoding: 8bit
+
+<html>
+<body>
+
+<table align="center" border="2" cellspacing="6" cellpadding="9" width="640" >
+<tr>
+<td bgcolor="cornsilk">
+
+
+<table bgcolor="gold" width="90%" align="center"><tr><td align="center">
+<b>
+<font size="5" color="brown">Title Of Newsletter</font>
+<br>
+<font size="2" color="black">January 01, 2000 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Issue #123 </font>
+</b>
+</td></tr></table>
+
+<br>
+Welcome! Here is your subscription!<br> 
+Unsubscribe instructions for "Newsletter Title Here" are at the end. 
+
+
+<br><br><br>
+<table bgcolor="gold" cellpadding="0" cellspacing="0"><tr><td><font size="4" color="brown">In This Issue</font></td></tr></table>
+<br>
+Feature Article &nbsp; &nbsp; &nbsp; Related Articles <br>
+What's New<br>
+Guest Article<br>
+Classifieds<br>
+Feedback
+
+<br><br><br>
+<table bgcolor="gold" cellpadding="0" cellspacing="0">
+<tr><td>
+<font size="4" color="brown">Feature Article</font>
+</td></tr></table>
+<br>
+blah blah goes here - usually more than one ?
+
+
+<br><br><br>
+<table bgcolor="gold" cellpadding="0" cellspacing="0">
+<tr><td>
+<font size="4" color="brown">What's New</font>
+</td></tr></table>
+<br>
+blank if no new news - but it could also contain a link to the current meeting minutes - depends on the type of web site. 
+
+<br><br><br>
+<table bgcolor="gold" cellpadding="0" cellspacing="0">
+<tr><td>
+<font size="4" color="brown">Guest Article</font>
+</td></tr></table>
+<br>
+blank if no article for this period 
+
+<br><br><br>
+<table bgcolor="gold" cellpadding="0" cellspacing="0">
+<tr><td>
+<font size="4" color="brown">Classified (or Sponsors)</font> </td></tr></table>
+<br>
+Forum Link (to the onsite forum)<br>
+Forum would contain Classified Section (and Sponsors Information for some types of web sites). <br> i.e. this section could be a link to an online Forum - or the info could be included in this section of the newsletter. 
+
+<br><br><br>
+<table bgcolor="gold" cellpadding="0" cellspacing="0">
+<tr><td>
+<font size="4" color="brown">Feedback Form</font>
+</td></tr></table>
+<br>
+A link to the Feedback Forum Section.
+<br> i.e. this section could be a link to an online Forum - or a form could be embedded in the online page - or it could just be an email link (mailto). 
+
+<br><br><br>
+<table bgcolor="gold" cellpadding="0" cellspacing="0">
+<tr><td>
+<font size="4" color="brown">Subscription and Archive</font>
+</td></tr></table>
+<br>
+How to Subscribe (could be link to 'tell-a-friend' form)<br>
+How to Unsubscribe<br>
+Link to Newsletter Archives 
+
+<br><br><br>
+<table bgcolor="gold" cellpadding="0" cellspacing="0">
+<tr><td>
+<font size="4" color="brown">About:</font> 'Newsletter Site Name Here' </td></tr></table>
+<br>
+Your Signature File or Name<br>
+Your Email Address<br>
+Your City, State Zip<br>
+Your Phone <br>
+Your Newsletter URL<br> 
+</td></tr>
+</table> 
+</body></html>
+
+--XXXXboundary text 
+Content-Type: text/plain;
+Content-Disposition: attachment;
+        filename="test.txt"
+
+this is the attachment text
+
+--XXXXboundary text--

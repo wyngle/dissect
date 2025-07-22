@@ -1,20 +1,20 @@
 # encoding: utf-8
 general_options:
-  data_classification: structured
+  data_classification: unstructured
 structured:
   # options for dissecting incoming structured data
   options:
     # more than one rows?
-    multiple?: true
+    multiple?: false
     # name for the multiple rows content (eg: {#{name} => [{"a"=>1, "b"=>2}]} )
     name: ordelines
     # row wraps?
-    multiline?: true
+    multiline?: false
     # strucrure of fixed width table - number of captured groups = number of fields
-    structure: {qty: 4, sku: 11, description: 31, price: 14}
+    structure: {}
     # orderline data start - end (will not be included)
-    parsing_start: "startt"
-    parsing_end: "endd"
+    parsing_start: ""
+    parsing_end: ""
     # max length of order line in bytes
     max_line: 80
     # if the multiline orderline seperates with something else than whitespace charachters

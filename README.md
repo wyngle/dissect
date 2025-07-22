@@ -16,6 +16,10 @@ Or install it yourself as:
 
     $ gem install dissect
 
+Run tests:
+
+    $ rake
+
 ## Usage
 
 TODO: Write usage instructions here

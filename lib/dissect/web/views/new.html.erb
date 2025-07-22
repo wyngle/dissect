@@ -1,0 +1,52 @@
+<html>
+  <body>
+    <%=@newyml%>
+    <form name="new_config" action='/_dissect/new' method='POST'>
+      <fieldset>
+      <legend>Create new config file for dissect</legend>
+        <label>Identifier</label>
+
+          <div class="input-prepend input-append" id="regexes">
+            <input class="span2" id="identifier" name="identifier"type="text" placeholder="Type a name…" required>
+            <span class="add-on">:</span>
+            <br>
+            <label>Regular Expresions</label>
+            <p>
+              <input class="span2" id="regname" name="names[regname]" value="" type="text" placeholder="regexp name" required>
+              <span class="add-on">: </span>
+             <span class="add-on">/</span>
+              <input class="span8 offset2" id="regex" name="regulars[regex]" value="" type="text" placeholder="write your regexp here" required>
+              <span class="add-on">/</span>
+              <input class="span1" id="option" name="new[option]" value="" type="text" placeholder="options" pattern="[i|x|m]">
+            </p>
+          </div>
+
+          <h1><a href="#" id="addReg">+</a></h2>
+         <button type="submit" class="btn">Create</button>
+      </fieldset>
+    </form>
+
+<!-- add dynamically new input fields -->
+    <script>
+    $(function() {
+        var regDiv = $('#regexes');
+        var i = $('#regexes p').size() + 1;
+
+        $('#addReg').live('click', function() {
+            $('<p><input class="span2" id="regname" name="names[regname_' + i +']" value="" type="text" placeholder="regexp name" required> <span class="add-on">: </span><span class="add-on">/</span><input class="span8 offset2" id="regex" name="regulars[regex_' + i +']" value="" type="text" placeholder="write your regexp here" required><span class="add-on">/</span><input class="span1" id="option" name="new[option_' + i +']" value="" type="text" placeholder="options"> <button class="btn btn-link" id="remReg">Remove</button></p>').appendTo(regDiv);
+            i++;
+            return false;
+        });
+
+        $('#remReg').live('click', function() {
+            if( i > 2 ) {
+                $(this).parents('p').remove();
+                i--;
+            }
+            return false;
+        });
+    });
+    </script>
+
+ </body>
+</html>

@@ -16,18 +16,21 @@ Gem::Specification.new do |gem|
   gem.files = Dir[
     'Rakefile',
     'lib/**/*.rb', 'spec/**/*.rb', 'test/**/*.rb',
-    "{lib}/**/*.rake", "{lib}/**/*.yml", 'lib/dissect/web/**/*', 
+    "{lib}/**/*.rake", "{lib}/**/*.yml", 'lib/dissect/web/**/*',
     '*.gemspec', '*.txt', '*.rdoc', '*.md'
   ]
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
 
-  gem.add_runtime_dependency 'sinatra', '>= 1.2.0'
-  gem.add_runtime_dependency 'sinatra-respond_to', '>= 0.8.0'
+  gem.add_runtime_dependency 'sinatra'
+  gem.add_runtime_dependency 'sinatra-respond_to'
   gem.add_runtime_dependency 'mail'
   gem.add_runtime_dependency 'nokogiri'
   gem.add_runtime_dependency 'json'
+  gem.add_runtime_dependency 'thor'
 
   gem.add_development_dependency "rspec"
+  gem.add_development_dependency "rack"
+  gem.add_development_dependency "rack-test"
 
   gem.require_paths = ["lib"]
 end

@@ -1,0 +1,19 @@
+Return-Path: <inter@site.com>
+X-Original-To: test@testing.com
+Delivered-To: test@good.com
+Received: by mail.site.com (Postfix, from userid 1002)
+	id 4C8A5E1CF; Thu, 13 Dec 2012 16:02:42 +0100 (CET)
+To: user@test.com
+Subject: Thank you for your order #550510!
+From: "testing.com Customer Service" <test@testing.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Message-Id: <201150242.4C8A5E1CF@mail.site.com>
+Date: Thu, 13 Dec 2012 16:02:42 +0100 (CET)
+
+
+Dear Mr. User,
+
+test "body"! just for @testing
+----

@@ -25,7 +25,7 @@ GEM
       net-smtp
     mini_mime (1.1.5)
     mini_portile2 (2.8.9)
-    mustermann (3.0.3)
+    mustermann (3.0.4)
       ruby2_keywords (~> 0.0.1)
     net-imap (0.5.9)
       date
@@ -36,16 +36,16 @@ GEM
       timeout
     net-smtp (0.5.1)
       net-protocol
-    nokogiri (1.18.9)
+    nokogiri (1.19.2)
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
     racc (1.8.1)
-    rack (3.1.16)
-    rack-protection (4.1.1)
+    rack (3.1.21)
+    rack-protection (4.2.0)
       base64 (>= 0.1.0)
       logger (>= 1.6.0)
       rack (>= 3.0.0, < 4)
-    rack-session (2.1.1)
+    rack-session (2.1.2)
       base64 (>= 0.1.0)
       rack (>= 3.0.0)
     rack-test (2.2.0)
@@ -71,17 +71,17 @@ GEM
       simplecov_json_formatter (~> 0.1)
     simplecov-html (0.13.2)
     simplecov_json_formatter (0.1.4)
-    sinatra (4.1.1)
+    sinatra (4.2.0)
       logger (>= 1.6.0)
       mustermann (~> 3.0)
       rack (>= 3.0.0, < 4)
-      rack-protection (= 4.1.1)
+      rack-protection (= 4.2.0)
       rack-session (>= 2.0.0, < 3)
       tilt (~> 2.0)
     sinatra-respond_to (0.4.0)
       sinatra (>= 0.9.4)
     thor (1.4.0)
-    tilt (2.6.1)
+    tilt (2.7.0)
     timeout (0.4.3)
 
 PLATFORMS
@@ -97,4 +97,4 @@ DEPENDENCIES
   simplecov
 
 BUNDLED WITH
-   2.6.9
+  4.0.3
